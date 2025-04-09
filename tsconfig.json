@@ -1,7 +1,15 @@
 {
   "compilerOptions": {
     "target": "ES2019",
-    "module": "esnext",
+    "module": "nodenext",
+    "baseUrl": ".", // important when using paths
+    "paths": {
+      "wagmi/query": ["node_modules/wagmi/query"],
+      "@tanstack/react-query/build/legacy/useQuery": [
+        "node_modules/@tanstack/react-query/build/legacy/useQuery"
+      ],
+      "viem": ["node_modules/viem"]
+    },
     "declaration": true,
     "outDir": "dist",
     "strict": true,

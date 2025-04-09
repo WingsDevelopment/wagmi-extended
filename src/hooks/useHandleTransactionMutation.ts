@@ -1,10 +1,10 @@
 import { waitForTransactionReceipt } from "wagmi/actions";
-import { useInvalidateQueries } from "./useInvalidateQueries";
 import { useConfig } from "wagmi";
 import { QueryKey } from "@tanstack/query-core";
 import { Address } from "viem";
 import { useState } from "react";
-import { getParsedError } from "../utils/errorParser";
+import { getParsedError } from "../utils/errorParser.js";
+import { useInvalidateQueries } from "./useInvalidateQueries.js";
 
 export type WriteExtendedAsyncParams = {
   onSuccess?: (txHash: Address) => void;

@@ -2,7 +2,7 @@ import { useWriteContract } from "wagmi";
 import {
   WriteExtendedAsyncParams,
   useHandleTransactionMutation,
-} from "./useHandleTransactionMutation";
+} from "./useHandleTransactionMutation.js";
 
 /**
  * Custom hook for writing to a smart contract using Wagmi.
