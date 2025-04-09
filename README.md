@@ -221,6 +221,18 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 );
 ```
 
+### Support & Donations
+
+If you enjoy this project and would like to support its ongoing development, please consider donating!
+
+- **Buy Me a Coffee:**  
+  [buymeacoffee.com/srdjanr160N](https://buymeacoffee.com/srdjanr160N)
+
+- **Ethereum Donation Address:**  
+  `0x410A11ed53a9a59094F24D2ae4ACbeF7f84955a1`
+
+Any donation, no matter how small, is greatly appreciated!
+
 ### License
 
 This is free and unencumbered software released into the public domain.
