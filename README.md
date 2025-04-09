@@ -104,14 +104,19 @@ const { writeContractAsync, isPending, errorMessage } = useContractWriteX({
 
 const handleWrite = async () => {
     try {
-    const txHash = await writeContractAsync({ transaction params here.. }, {
-      // use calbacks here in writeContractAsync or in useContractWriteX
-      onSuccess: (txHash) => console.log("Transaction successful:", txHash),
-      onError: (error) => console.error("Transaction error:", error),
-    });
-    console.log("Received txHash:", txHash);
+      const txHash = await writeContractAsync({
+        address: "0xContractAddress",
+        abi: [], // Provide your contract ABI
+        functionName: "executeFunction",
+        args: [/* function arguments */],
+      }, {
+        // use calbacks here in writeContractAsync or in useContractWriteX
+        onSuccess: (txHash) => console.log("Transaction successful:", txHash),
+        onError: (error) => console.error("Transaction error:", error),
+      });
+      console.log("Received txHash:", txHash);
     } catch (err) {
-    console.error("Failed writing transaction:", err);`
+      console.error("Failed writing transaction:", err);`
     }
 };
 
@@ -146,12 +151,7 @@ function TransactionButton() {
   const handleTransaction = async () => {
     try {
       // Replace with actual transaction parameters
-      const txHash = await sendTransactionAsync({
-        address: "0xContractAddress",
-        abi: [], // Provide your contract ABI
-        functionName: "executeFunction",
-        args: [/* function arguments */],
-      });
+      const txHash = await sendTransactionAsync({ transaction params here.. });
       console.log("Transaction hash:", txHash);
     } catch (error) {
       console.error(error);
