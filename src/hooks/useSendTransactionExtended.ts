@@ -1,7 +1,7 @@
 import { Hash } from "viem";
 import { useSendTransaction } from "wagmi";
 import { QueryKey } from "@tanstack/query-core";
-import { useHandleTransactionMutation } from "./useHandleTransactionMutation";
+import { useHandleTransactionMutation } from "./useHandleTransactionMutation.js";
 
 export type SeamlessSendAsyncParams = {
   onSuccess?: (txHash: Hash) => void;
