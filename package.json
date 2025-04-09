@@ -1,0 +1,35 @@
+{
+  "name": "wagmi-extended",
+  "version": "0.1.0",
+  "description": "A library providing extended hooks on top of Wagmi with additional features.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WingsDevelopment/wagmi-extended.git"
+  },
+  "keywords": [
+    "wagmi",
+    "ethereum",
+    "hooks",
+    "react",
+    "blockchain"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.0.0",
+    "react": "^17.0.0 || ^18.0.0",
+    "viem": "^2.0.0",
+    "wagmi": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.1.0",
+    "typescript": "^5.0.0"
+  }
+}
