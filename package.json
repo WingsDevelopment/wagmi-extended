@@ -1,9 +1,20 @@
 {
   "name": "wagmi-extended",
-  "version": "0.1.0",
+  "version": "0.4.0",
+  "type": "module",
   "description": "A library providing extended hooks on top of Wagmi with additional features.",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./hooks/*": "./dist/hooks/*.js",
+    "./utils/*": "./dist/utils/*.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/WingsDevelopment/wagmi-extended.git"
@@ -15,10 +26,11 @@
     "react",
     "blockchain"
   ],
-  "author": "Your Name",
+  "author": "Srdjan Rakic <bans.cowboy@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
+    "clean": "rimraf dist",
+    "build": "npm run clean && npm version minor && rollup -c --bundleConfigAsCjs",
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
@@ -28,8 +40,14 @@
     "wagmi": "^2.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
     "@types/node": "^22.14.0",
     "@types/react": "^19.1.0",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.39.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
     "typescript": "^5.0.0"
   }
 }
