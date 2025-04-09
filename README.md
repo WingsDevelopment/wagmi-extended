@@ -15,7 +15,8 @@ It simplifies common tasks such as fetching token metadata, approving ERC20 toke
   - [useContractWriteX Hook](#usecontractwritex-hook)
   - [useSendTransactionX Hook](#usesendtransactionx-hook)
   - [useTokenX Hook](#usetokenx-hook)
-- [Non-hook functions setup](#Non-hook-functions-setup)
+- [Non-hook functions setup](#non-hook-functions-setup)
+- [Donations](#support--donations)
 - [License](#license)
 
 ### Installation
