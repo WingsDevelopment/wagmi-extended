@@ -25,6 +25,7 @@ import {
  * // In your component:
  * function MyTransactionComponent() {
  *   const { sendTransactionAsync, isPending, errorMessage } = useSendTransactionX({
+ *     // use calbacks here in useContractWriteX or in writeContractAsync
  *     onSuccess: (txHash) => console.log("Transaction successful:", txHash),
  *     onError: (error) => console.error("Transaction error:", error),
  *     queriesToInvalidate: [["userBalance"], ["userActivity"]],

@@ -99,14 +99,16 @@ Example:
 ```bash
 function MyTransactionComponent() {
 const { writeContractAsync, isPending, errorMessage } = useContractWriteX({
-    onSuccess: (txHash) => console.log("Transaction successful:", txHash),
-    onError: (error) => console.error("Transaction error:", error),
     queriesToInvalidate: [["userBalance"], ["userActivity"]],
 });
 
 const handleWrite = async () => {
     try {
-    const txHash = await writeContractAsync({ transaction params here.. });
+    const txHash = await writeContractAsync({ transaction params here.. }, {
+      // use calbacks here in writeContractAsync or in useContractWriteX
+      onSuccess: (txHash) => console.log("Transaction successful:", txHash),
+      onError: (error) => console.error("Transaction error:", error),
+    });
     console.log("Received txHash:", txHash);
     } catch (err) {
     console.error("Failed writing transaction:", err);`
@@ -135,6 +137,7 @@ import { useSendTransactionX } from "wagmi-extended";
 
 function TransactionButton() {
   const { sendTransactionAsync, isPending, errorMessage } = useSendTransactionX({
+    // use calbacks here in useSendTransactionX or in sendTransactionAsync
     onSuccess: (txHash) => console.log("Transaction successful:", txHash),
     onError: (error) => console.error("Transaction failed:", error),
     queriesToInvalidate: [["someQueryKey"]],
