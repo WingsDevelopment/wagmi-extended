@@ -1,6 +1,9 @@
 # wagmi-extended
 
-`wagmi-extended` is a library that provides extended hooks and helper functions on top of [Wagmi](https://wagmi.sh/), [Viem](https://viem.sh/), and [TanStack Query](https://tanstack.com/query/v5) for Ethereum and blockchain development with React. It simplifies common tasks such as fetching token metadata, approving ERC20 token transfers, sending transactions, writing contracts, waiting for receipt and more—with configurable behavior via global defaults.
+`wagmi-extended` is a library that provides extended hooks and helper functions on top of [Wagmi](https://wagmi.sh/), [Viem](https://viem.sh/), and [TanStack Query](https://tanstack.com/query/v5) for Ethereum and blockchain development with React.
+<br />
+<br />
+It simplifies common tasks such as fetching token metadata, approving ERC20 token transfers, sending transactions, writing contracts, waiting for receipt and more—with configurable behavior via global defaults.
 
 ## Table of Contents
 
@@ -38,7 +41,7 @@ Your project must include the following peer dependencies:
 - **Viem**: ^2.0.0
 - **@tanstack/react-query**: ^5.0.0
 
-Note: You must wrap your application with necessary providers (e.g. QueryClientProvider from TanStack Query).
+Note: You must wrap your application with necessary providers (e.g. QueryClientProvider from TanStack Query and WagmiProvider).
 
 ### API
 
@@ -49,6 +52,7 @@ import {
   useTokenX,
   useERC20ApproveX,
   useSendTransactionX,
+  useWriteTransactionX,
   setDefaults,
   getDefaults,
 } from "wagmi-extended";
