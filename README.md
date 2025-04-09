@@ -10,12 +10,12 @@ It simplifies common tasks such as fetching token metadata, approving ERC20 toke
 - [Installation](#installation)
 - [Requirements](#requirements)
 - [API](#api)
-- [Setup](#setup)
 - [Usage](#usage)
   - [useERC20ApproveX Hook](#useerc20approvex-hook)
   - [useContractWriteX Hook](#usecontractwritex-hook)
   - [useSendTransactionX Hook](#usesendtransactionx-hook)
   - [useTokenX Hook](#usetokenx-hook)
+- [Non-hook functions setup](#Non-hook-functions-setup)
 - [License](#license)
 
 ### Installation
@@ -59,38 +59,6 @@ import {
 ```
 
 Each hook is documented with detailed JSDoc comments (including usage examples) in the source code. Refer to that documentation for additional details.
-
-## Setup
-
-For easier use of fetch (non hook) functions setup the default configuration.
-<br />
-This is done by calling `setDefaults` in your application initialization (e.g., in index.tsx or App.tsx).
-
-Example:
-
-```bash
-// index.tsx (or App.tsx)
-import React from "react";
-import ReactDOM from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useConfig } from "wagmi";
-import { setDefaults } from "wagmi-extended";
-
-const queryClient = new QueryClient();
-// Obtain your Wagmi configuration from your initialization or provider
-const wagmiConfig = /* your wagmi config here */;
-
-// Set defaults for the extended library functions.
-setDefaults(queryClient, wagmiConfig);
-
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </React.StrictMode>
-);
-```
 
 ## Hooks explanations and examples
 
@@ -217,6 +185,40 @@ function TokenDisplay({ tokenAddress }: { tokenAddress: Address }) {
     </div>
   );
 }
+```
+
+## Non-hook functions setup
+
+**Feel free to skip Setup-section if using only hooks - no fetch methods directly**
+<br />
+For easier use of fetch (non hook) functions setup the default configuration.
+<br />
+This is done by calling `setDefaults` in your application initialization (e.g., in index.tsx or App.tsx).
+
+Example:
+
+```bash
+// index.tsx (or App.tsx)
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useConfig } from "wagmi";
+import { setDefaults } from "wagmi-extended";
+import { wagmiConfig } from "/your/path/to/wagmi-config";
+
+const queryClient = new QueryClient();
+// Obtain your Wagmi configuration from your initialization or provider
+
+// Set defaults for the extended library functions.
+setDefaults(queryClient, wagmiConfig);
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+  </React.StrictMode>
+);
 ```
 
 ### License
