@@ -77,7 +77,7 @@ export const getErrorMapping = (): Record<string, string> =>
  * const message = getParsedError(someError);
  * console.log(message); // Outputs a custom error message or a default error message.
  */
-export const getParsedError = (error: any | BaseError): string => {
+export const getParsedErrorX = (error: any | BaseError): string => {
   const defaultMessage = "An unknown error occurred. Please contact support.";
   let message = defaultMessage;
   let errorKey = "";

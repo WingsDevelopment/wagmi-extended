@@ -1,8 +1,9 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
 import { readContractQueryOptions } from "wagmi/query";
 import { Address, zeroAddress, erc20Abi } from "viem";
+import { Config } from "wagmi";
+import { getDefaults } from "../config/defaults.js";
 import { queryConfig } from "../query-config/index.js";
-import { useConfig } from "wagmi";
 
 export interface Token {
   symbol: string;
@@ -16,11 +17,20 @@ export const EthTokenData: Token = {
   name: "Ethereum",
 };
 
-export async function fetchDecimals(
+export async function fetchDecimalsX(
   token: Address,
-  queryClient: any,
-  wagmiConfig: any
+  queryClient?: QueryClient,
+  wagmiConfig?: Config
 ): Promise<number | undefined> {
+  if (!queryClient || !wagmiConfig) {
+    ({ queryClient, wagmiConfig } = getDefaults());
+  }
+  if (!queryClient || !wagmiConfig) {
+    throw new Error(
+      "Could not find queryClient or wagmiConfig, either pass them as arguments or set them using setDefaults()"
+    );
+  }
+
   if (token === zeroAddress) return EthTokenData.decimals;
 
   const decimals = await queryClient.fetchQuery({
@@ -35,11 +45,20 @@ export async function fetchDecimals(
   return decimals;
 }
 
-export async function fetchSymbol(
+export async function fetchSymbolX(
   token: Address,
-  queryClient: any,
-  wagmiConfig: any
+  queryClient?: QueryClient,
+  wagmiConfig?: Config
 ): Promise<string> {
+  if (!queryClient || !wagmiConfig) {
+    ({ queryClient, wagmiConfig } = getDefaults());
+  }
+  if (!queryClient || !wagmiConfig) {
+    throw new Error(
+      "Could not find queryClient or wagmiConfig, either pass them as arguments or set them using setDefaults()"
+    );
+  }
+
   if (token === zeroAddress) return EthTokenData.symbol;
 
   const symbol = await queryClient.fetchQuery({
@@ -54,12 +73,21 @@ export async function fetchSymbol(
   return symbol;
 }
 
-export async function fetchName(
+export async function fetchNameX(
   token: Address,
   queryClient: any,
   wagmiConfig: any
 ): Promise<string> {
   if (token === zeroAddress) return EthTokenData.name;
+
+  if (!queryClient || !wagmiConfig) {
+    ({ queryClient, wagmiConfig } = getDefaults());
+  }
+  if (!queryClient || !wagmiConfig) {
+    throw new Error(
+      "Could not find queryClient or wagmiConfig, either pass them as arguments or set them using setDefaults()"
+    );
+  }
 
   const name = await queryClient.fetchQuery({
     ...readContractQueryOptions(wagmiConfig, {
@@ -84,17 +112,17 @@ export async function fetchName(
  * @returns A `Token` object containing the symbol, decimals.
  * @throws Will throw an error if symbol or decimals cannot be fetched.
  */
-export async function fetchToken(
+export async function fetchTokenX(
   token: Address,
   queryClient: any,
   wagmiConfig: any
 ): Promise<Token> {
   const [symbol, decimals, name] = await Promise.all([
-    fetchSymbol(token, queryClient, wagmiConfig),
-    fetchDecimals(token, queryClient, wagmiConfig),
-    fetchName(token, queryClient, wagmiConfig),
+    fetchSymbolX(token, queryClient, wagmiConfig),
+    fetchDecimalsX(token, queryClient, wagmiConfig),
+    fetchNameX(token, queryClient, wagmiConfig),
   ]);
-  if (!symbol || !decimals) {
+  if (!symbol || !decimals || !name) {
     throw new Error("Failed to fetch token data");
   }
 
@@ -104,19 +132,3 @@ export async function fetchToken(
     name,
   };
 }
-
-export const useToken = (asset?: Address) => {
-  const queryClient = useQueryClient();
-  const config = useConfig();
-
-  const { data, ...rest } = useQuery({
-    queryKey: ["useTokenWagmiExtended", asset],
-    queryFn: () => fetchToken(asset!, queryClient, config),
-    enabled: Boolean(asset),
-  });
-
-  return {
-    ...rest,
-    data,
-  };
-};

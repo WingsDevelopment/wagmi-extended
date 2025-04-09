@@ -3,7 +3,7 @@ import { useConfig } from "wagmi";
 import { QueryKey } from "@tanstack/query-core";
 import { Address } from "viem";
 import { useState } from "react";
-import { getParsedError } from "../utils/errorParser.js";
+import { getParsedErrorX } from "../utils/errorParserX.js";
 import { useInvalidateQueries } from "./useInvalidateQueries.js";
 
 export type WriteExtendedAsyncParams = {
@@ -20,7 +20,7 @@ export type WriteExtendedAsyncParams = {
  *
  * @returns {Function} A shared `onSettled` callback for transaction mutations.
  */
-export function useHandleTransactionMutation({
+export function useHandleTransactionMutationX({
   settings,
 }: {
   settings?: WriteExtendedAsyncParams;
@@ -74,7 +74,7 @@ export function useHandleTransactionMutation({
       // 6. return result
       return txHash;
     } catch (error) {
-      const parsedError = getParsedError(error);
+      const parsedError = getParsedErrorX(error);
 
       if (!settings?.disableLogging) {
         // 1. log error

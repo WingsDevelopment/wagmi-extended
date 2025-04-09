@@ -1,61 +1,65 @@
 import { useState, useEffect } from "react";
 import { Address, maxUint256, erc20Abi } from "viem";
-import { useFetchAssetAllowance } from "./useFetchAssetAllowance.js";
-import { useContractWriteExtended } from "./useContractWriteExtended.js";
-
-const ALWAYS_APPROVE_MAX = false;
-
-/**
- * Helper function to determine human readable state of approve.
- *
- * @param {boolean} isApproved - Indicates if the approval is already done.
- * @param {boolean} justApproved - Indicates if the user has just approved.
- * @return {string} - The appropriate button text.
- */
-
-export function getApproveState(isApproved?: boolean, justApproved?: boolean) {
-  if (isApproved) {
-    return justApproved ? "Approve Confirmed" : "Approved";
-  }
-  return "Approve";
-}
+import { useFetchAssetAllowanceX } from "./useFetchAssetAllowanceX.js";
+import { useContractWriteX } from "./useContractWriteX.js";
 
 /**
  * Custom hook for approving ERC20 token transfers.
  *
  * This hook provides functionality for approving ERC20 token transfers, checking the current allowance, and handling the approval transaction using Wagmi.
  *
- * @param {Address} tokenAddress - The address of the ERC20 token contract.
+ * @param {Address} tokenAddress - The address of the ERC20 token contract (the transfer from).
  * @param {Address} spenderAddress - The address of the spender to approve the transfer to.
- * @param {bigint} [amount=BigInt(0)] - The amount of tokens to approve for transfer. Defaults to 0.
+ * @param {bigint} [amount=BigInt(0)] - The amount to approve for transfer. Defaults to undefined.
+ * @param {boolean} [approveMax=false] - Indicates whether to approve the maximum amount or a specific amount.
  * @returns {Object} Object containing the following properties:
  * - {boolean} isApproved - Indicates whether the spender is already approved to transfer the specified amount of tokens.
  * - {boolean} isApproving - Indicates whether an approval transaction is currently pending.
  * - {Function} approveAsync - Function to trigger the approval transaction.
+ *
+ * @example
+ * // In your component:
+ * function ApproveTokenButton(amountToApprove) {
+ *   const tokenAddress = "0xTokenAddressExample";
+ *   const spenderAddress = "0xSpenderAddressExample";
+ *
+ *   const { isApproved, isApproving, justApproved, approveAsync } = useERC20ApproveX(
+ *     tokenAddress,
+ *     spenderAddress,
+ *     parseUnits(amountToApprove.toString(), 18),
+ *   );
+ *
+ *   return (
+ *     <button onClick={approveAsync} disabled={isApproving || isApproved}>
+ *       {isApproving ? "Approving..." : isApproved ? "Approved" : "Approve Token"}
+ *     </button>
+ *   );
+ * }
  */
 
-export const useERC20Approve = (
+export const useERC20ApproveX = (
   tokenAddress?: Address,
   spenderAddress?: Address,
-  amount?: bigint
+  amount?: bigint,
+  approveMax?: boolean
 ) => {
   const [isApproved, setIsApproved] = useState(false);
   const [justApproved, setJustApproved] = useState(false);
 
-  const { data: allowance, queryKey } = useFetchAssetAllowance({
+  const { data: allowance, queryKey: allowanceKQ } = useFetchAssetAllowanceX({
     asset: tokenAddress,
     spender: spenderAddress,
   });
 
   const { writeContractAsync: approveTokenAsync, isPending } =
-    useContractWriteExtended({
-      queriesToInvalidate: [queryKey],
+    useContractWriteX({
+      queriesToInvalidate: [allowanceKQ],
     });
 
   useEffect(() => {
     if (amount == null) {
       setIsApproved(false);
-    } else if (allowance && allowance.bigIntValue >= amount) {
+    } else if (allowance && allowance >= amount) {
       setIsApproved(true);
     } else {
       setIsApproved(false);
@@ -63,19 +67,19 @@ export const useERC20Approve = (
   }, [allowance, amount]);
 
   const approveAsync = async () => {
-    const amountToApprove = ALWAYS_APPROVE_MAX ? maxUint256 : amount;
-
-    if (!spenderAddress) {
-      throw new Error("spenderAddress is undefined!");
-    }
-    if (!tokenAddress) {
-      throw new Error("tokenAddress is undefined!");
-    }
-    if (amountToApprove == null) {
-      throw new Error("amountToApprove is undefined!");
-    }
+    const amountToApprove = approveMax ? maxUint256 : amount;
 
     try {
+      if (!spenderAddress) {
+        throw new Error("spenderAddress is undefined!");
+      }
+      if (!tokenAddress) {
+        throw new Error("tokenAddress is undefined!");
+      }
+      if (amountToApprove == null) {
+        throw new Error("amountToApprove is undefined!");
+      }
+
       await approveTokenAsync(
         {
           address: tokenAddress,

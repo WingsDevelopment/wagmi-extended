@@ -1,21 +1,15 @@
-import { Hash } from "viem";
 import { useSendTransaction } from "wagmi";
-import { QueryKey } from "@tanstack/query-core";
-import { useHandleTransactionMutation } from "./useHandleTransactionMutation.js";
-
-export type SeamlessSendAsyncParams = {
-  onSuccess?: (txHash: Hash) => void;
-  onError?: (e: any) => void;
-  onSettled?: () => void;
-  queriesToInvalidate?: (QueryKey | undefined)[];
-};
+import {
+  useHandleTransactionMutationX,
+  WriteExtendedAsyncParams,
+} from "./useHandleTransactionMutationX.js";
 
 /**
  * Custom hook for sending a transaction using Wagmi.
  *
  * This hook provides functionality for sending a transaction using Wagmi, handling the asynchronous nature of the operation, waiting for the transaction receipt, and error handling.
  *
- * @param {SeamlessWriteAsyncParams} [settings] - Optional settings for the write operation.
+ * @param {WriteExtendedAsyncParams} [settings] - Optional settings for the write operation.
  * @param {boolean} [settings.disableWaitingForReceipt] - Disables waiting for the transaction receipt.
  * @param {boolean} [settings.disableLogging] - Disables logging the result of the transaction.
  * @param {Function} [settings.onSuccess] - Callback function to be called on successful transaction.
@@ -26,11 +20,39 @@ export type SeamlessSendAsyncParams = {
  * - {boolean} isPending - Indicates whether the transaction is pending.
  * - {string|undefined} errorMessage - The error message, if an error occurred during the transaction.
  * - {Function} sendTransactionAsync - Function to trigger the send transaction mutation.
+
+ * @example
+ * // In your component:
+ * function MyTransactionComponent() {
+ *   const { sendTransactionAsync, isPending, errorMessage } = useSendTransactionX({
+ *     onSuccess: (txHash) => console.log("Transaction successful:", txHash),
+ *     onError: (error) => console.error("Transaction error:", error),
+ *     queriesToInvalidate: [["userBalance"], ["userActivity"]],
+ *   });
+ *
+ *   const handleSend = async () => {
+ *     try {
+ *       const txHash = await sendTransactionAsync({ transaction params here.. });
+ *       console.log("Received txHash:", txHash);
+ *     } catch (err) {
+ *       console.error("Failed sending transaction:", err);`
+ *     }
+ *   };
+ *
+ *   return (
+ *     <div>
+ *       <button onClick={handleSend} disabled={isPending}>
+ *         {isPending ? "Processing..." : "Send Transaction"}
+ *       </button>
+ *       {errorMessage && <p>Error: {errorMessage}</p>}
+ *     </div>
+ *   );
+ * }
  */
 
-export function useSendTransactionExtended(settings?: SeamlessSendAsyncParams) {
+export function useSendTransactionX(settings?: WriteExtendedAsyncParams) {
   const { isPending, errorMessage, onMutate, onSettled } =
-    useHandleTransactionMutation({
+    useHandleTransactionMutationX({
       settings,
     });
 
