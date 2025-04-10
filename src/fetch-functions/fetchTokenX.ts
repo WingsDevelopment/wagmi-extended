@@ -114,8 +114,8 @@ export async function fetchNameX(
  */
 export async function fetchTokenX(
   token: Address,
-  queryClient: any,
-  wagmiConfig: any
+  queryClient?: QueryClient,
+  wagmiConfig?: Config
 ): Promise<Token> {
   const [symbol, decimals, name] = await Promise.all([
     fetchSymbolX(token, queryClient, wagmiConfig),
