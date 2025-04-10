@@ -1,6 +1,6 @@
 {
   "name": "wagmi-extended",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "description": "A library providing extended hooks on top of Wagmi with additional features.",
   "main": "dist/index.cjs.js",
@@ -23,10 +23,13 @@
   },
   "keywords": [
     "wagmi",
-    "ethereum",
-    "hooks",
-    "react",
-    "blockchain"
+    "wagmi extended",
+    "wagmi utils",
+    "wagmi extra",
+    "waiting for receipt",
+    "erc20",
+    "react hooks",
+    "transaction receipt"
   ],
   "author": "Srdjan Rakic <bans.cowboy@gmail.com>",
   "license": "MIT",
