@@ -48,6 +48,10 @@ Your project must include the following peer dependencies:
 
 Note: You must wrap your application with necessary providers (e.g. QueryClientProvider from TanStack Query and WagmiProvider).
 
+## Playground
+
+Compare wagmi-extended with standard wagmi implementations in our interactive CodeSandbox project. [View the CodeSandbox Project](https://codesandbox.io/p/sandbox/5jr3lg) to explore its features and see how it works in practice!
+
 ### API
 
 You can import all the functions and hooks directly from `wagmi-extended`. For example:
