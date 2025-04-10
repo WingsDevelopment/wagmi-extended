@@ -1,9 +1,12 @@
 # wagmi-extended
 
-`wagmi-extended` is a library that provides extended hooks and helper functions on top of [Wagmi](https://wagmi.sh/), [Viem](https://viem.sh/), and [TanStack Query](https://tanstack.com/query/v5) for Ethereum and blockchain development with React.
-<br />
-<br />
-It simplifies common tasks such as fetching token metadata, approving ERC20 token transfers, sending transactions, writing contracts, waiting for receipt and more—with configurable behavior via global defaults.
+`wagmi-extended` is a powerful library that builds on [Wagmi](https://wagmi.sh/), [Viem](https://viem.sh/), and [TanStack Query](https://tanstack.com/query/v5) to deliver extended hooks and helper functions for Ethereum and blockchain development with React.
+<br /><br />
+It simplifies tasks like fetching token metadata, handling ERC20 approvals, sending transactions, writing contracts and getting user friendly error message.
+<br /><br />
+Our library adheres to one core principle: **always wait for a transaction receipt**. This guarantees that your dApps capture transaction outcomes reliably—no manual state management or race conditions required.
+<br /><br />
+Whether you're building a DeFi platform, a governance system, or any blockchain solution, `wagmi-extended` offers a consistent, reliable, and developer-friendly interface, trusted in production with over $500M in volume.
 
 ## Table of Contents
 
@@ -16,6 +19,7 @@ It simplifies common tasks such as fetching token metadata, approving ERC20 toke
   - [useSendTransactionX Hook](#usesendtransactionx-hook)
   - [useTokenX Hook](#usetokenx-hook)
 - [Non-hook functions setup](#non-hook-functions-setup)
+- [Contributing](#contributing)
 - [Donations](#support--donations)
 - [License](#license)
 
@@ -191,7 +195,7 @@ function TokenDisplay({ tokenAddress }: { tokenAddress: Address }) {
 }
 ```
 
-## Non-hook functions setup
+### Non-hook functions setup
 
 **Feel free to skip Setup-section if using only hooks - no fetch methods directly**
 <br />
@@ -225,7 +229,19 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 );
 ```
 
-### Support & Donations
+## Contributing
+
+This project is open source and we welcome contributions from the community! If you have ideas, improvements, or bug fixes, please feel free to open pull requests or file issues. Your help makes this project better for everyone.
+
+- **Open Issues & PRs:**  
+  You can report bugs or request features by opening an issue on [GitHub Issues](https://github.com/WingsDevelopment/wagmi-extended/issues). Similarly, feel free to open a pull request (PR) with your changes.
+
+- **Star the Project:**  
+  If you like `wagmi-extended` or find it useful, please consider starring the repository on [GitHub](https://github.com/WingsDevelopment/wagmi-extended). It helps the project gain visibility and motivates further development.
+
+Thank you for your support and contributions!
+
+## Support & Donations
 
 If you enjoy this project and would like to support its ongoing development, please consider donating!
 
@@ -237,7 +253,7 @@ If you enjoy this project and would like to support its ongoing development, ple
 
 Any donation, no matter how small, is greatly appreciated!
 
-### License
+## License
 
 This is free and unencumbered software released into the public domain.
 
