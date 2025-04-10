@@ -12,6 +12,7 @@ Whether you're building a DeFi platform, a governance system, or any blockchain 
 
 - [Installation](#installation)
 - [Requirements](#requirements)
+- [Playground](#playground)
 - [API](#api)
 - [Usage](#usage)
   - [useERC20ApproveX Hook](#useerc20approvex-hook)
