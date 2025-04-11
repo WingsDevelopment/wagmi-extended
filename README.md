@@ -146,7 +146,7 @@ return (
 
 The `useSendTransactionX` hook wraps the transaction-sending functionality from Wagmi with additional features like `receipt` waiting, `logging` control, and `query invalidation` after receipt is successfully fetched.
 
-Very similar to useContractWrite, see [playground](https://codesandbox.io/p/sandbox/5jr3lg) for example.
+Very similar to useContractWriteX, see [playground](https://codesandbox.io/p/sandbox/5jr3lg) for example.
 
 ### useTokenX Hook
 
