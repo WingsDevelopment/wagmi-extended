@@ -251,11 +251,11 @@ Example:
 
 ```bash
 const tokenPromises = await Promise.all(tokenAddresses.map((token) =>
-  fetchTokenX(token, queryClient, wagmiConfig);
+  fetchTokenX(token);
 ));
 ```
 
-> **Note:** : if you did setup defaults (queryClient and wagmi config) you can call just `fetchTokenX(token)`.
+> **Note:** : if you did not setup defaults (queryClient and wagmi config) you can call by passing client and config as params: `fetchTokenX(token, queryClient, wagmiConfig)`.
 
 ## Contributing
 
