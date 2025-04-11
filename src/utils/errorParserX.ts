@@ -47,7 +47,7 @@ export const setErrorMapping = (
  * resetErrorMapping();
  */
 export const resetErrorMapping = (): void => {
-  currentErrorMapping = { ...defaultErrorMapping };
+  currentErrorMapping = {};
 };
 
 /**

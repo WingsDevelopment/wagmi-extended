@@ -144,37 +144,7 @@ return (
 
 The `useSendTransactionX` hook wraps the transaction-sending functionality from Wagmi with additional features like `receipt` waiting, `logging` control, and `query invalidation` after receipt is successfully fetched.
 
-Example:
-
-```bash
-import { useSendTransactionX } from "wagmi-extended";
-
-function TransactionButton() {
-  const { sendTransactionAsync, isPending, errorMessage } = useSendTransactionX({
-    // use calbacks here in useSendTransactionX or in sendTransactionAsync
-    onSuccess: (txHash) => console.log("Transaction successful:", txHash),
-    onError: (error) => console.error("Transaction failed:", error),
-    queriesToInvalidate: [["someQueryKey"]],
-  });
-
-  const handleTransaction = async () => {
-    try {
-      // Replace with actual transaction parameters
-      const txHash = await sendTransactionAsync({ transaction params here.. });
-      console.log("Transaction hash:", txHash);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  return (
-    <button onClick={handleTransaction} disabled={isPending}>
-      {isPending ? "Processing..." : "Send Transaction"}
-      {errorMessage && <span>Error: {errorMessage}</span>}
-    </button>
-  );
-}
-```
+Very similar to useContractWrite, see [playground](https://codesandbox.io/p/sandbox/5jr3lg) for example.
 
 ### useTokenX Hook
 
@@ -233,6 +203,61 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   </React.StrictMode>
 );
 ```
+
+### fetchTokenX
+
+### Error Handling
+
+The library provides a built-in error mapping mechanism to transform raw errors into user-friendly messages. This is especially useful when working with smart contracts that may revert with different kinds of errors.
+
+Note: mapper is just a `fallback` if error message can't be understood from ABIs.
+
+Example: Override the default allowance error message and add a new custom error. Provide error type (name), signature or reason and string as a message.
+
+```bash
+setErrorMapping({
+  ErrorNotEnoughAllowance: "Custom message: Please approve tokens first!",
+  NewCustomError: "A custom error occurred.",
+  "0xea8d7f02":
+    "Action exceeded safe slippage parameters, please try again later",
+});
+```
+
+Note: this `EXPANDS` the current object, it doesn't override.
+
+This is default error mapper, feel free to create PR to extend it as well:
+
+```bash
+const defaultErrorMapping: Record<string, string> = {
+  EnforcedPause: "Temporary pause in effect, please check Discord for updates.",
+  ErrorNotEnoughAllowance:
+    "Not enough allowance, did you approve your tokens first?",
+  "0xc2139725": "Not enough allowance, did you approve your tokens first?",
+  SharesReceivedBelowMinimum:
+    "Action exceeded safe slippage parameters, please try again later",
+  "0xea8d7f02":
+    "Action exceeded safe slippage parameters, please try again later",
+  MaxSlippageExceeded:
+    "Action exceeded safe slippage parameters, please try again later",
+  "51": "Supply cap exceeded",
+};
+```
+
+Note: if you don't like initial error mapping and messages, you can call `resetErrorMapping()` which will reset the mapping to `{}`.
+
+### fetchTokenX
+
+Example:
+
+```bash
+const tokenPromises = await Promise.all(tokenAddresses.map((token) =>
+  fetchTokenX(token, queryClient, wagmiConfig);
+));
+```
+
+::: note
+Note: if you did setup defaults (queryClient and wagmi config) you can call just `fetchTokenX(token)`.
+:::
 
 ## Contributing
 
