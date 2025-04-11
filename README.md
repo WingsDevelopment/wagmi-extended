@@ -20,11 +20,13 @@ Whether you're building a DeFi platform, a governance system, or any blockchain 
   - [useSendTransactionX Hook](#usesendtransactionx-hook)
   - [useTokenX Hook](#usetokenx-hook)
 - [Non-hook functions setup](#non-hook-functions-setup)
+  - [Error handling](#error-handling)
+  - [fetchTokenX](#fetchTokenX)
 - [Contributing](#contributing)
 - [Donations](#support--donations)
 - [License](#license)
 
-### Installation
+## Installation
 
 Install via npm:
 
@@ -38,7 +40,7 @@ Or with Yarn:
 yarn add wagmi-extended
 ```
 
-### Requirements
+## Requirements
 
 Your project must include the following peer dependencies:
 
@@ -170,7 +172,7 @@ function TokenDisplay({ tokenAddress }: { tokenAddress: Address }) {
 }
 ```
 
-### Non-hook functions setup
+## Non-hook functions setup
 
 **Feel free to skip Setup-section if using only hooks - no fetch methods directly**
 <br />
@@ -203,8 +205,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   </React.StrictMode>
 );
 ```
-
-### fetchTokenX
 
 ### Error Handling
 
