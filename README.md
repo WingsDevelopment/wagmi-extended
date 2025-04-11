@@ -47,7 +47,7 @@ Your project must include the following peer dependencies:
 - **Viem**: ^2.0.0
 - **@tanstack/react-query**: ^5.0.0
 
-Note: You must wrap your application with necessary providers (e.g. QueryClientProvider from TanStack Query and WagmiProvider).
+> **Note:** : You must wrap your application with necessary providers (e.g. QueryClientProvider from TanStack Query and WagmiProvider).
 
 ## Playground
 
@@ -210,7 +210,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 
 The library provides a built-in error mapping mechanism to transform raw errors into user-friendly messages. This is especially useful when working with smart contracts that may revert with different kinds of errors.
 
-Note: mapper is just a `fallback` if error message can't be understood from ABIs.
+> **Note:** : mapper is just a `fallback` if error message can't be understood from ABIs.
 
 Example: Override the default allowance error message and add a new custom error. Provide error type (name), signature or reason and string as a message.
 
@@ -223,7 +223,7 @@ setErrorMapping({
 });
 ```
 
-Note: this `EXPANDS` the current object, it doesn't override.
+> **Note:** : this `EXPANDS` the current object, it doesn't override.
 
 This is default error mapper, feel free to create PR to extend it as well:
 
@@ -243,7 +243,7 @@ const defaultErrorMapping: Record<string, string> = {
 };
 ```
 
-Note: if you don't like initial error mapping and messages, you can call `resetErrorMapping()` which will reset the mapping to `{}`.
+> **Note:** : if you don't like initial error mapping and messages, you can call `resetErrorMapping()` which will reset the mapping to `{}`.
 
 ### fetchTokenX
 
