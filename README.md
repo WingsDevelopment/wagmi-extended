@@ -250,7 +250,7 @@ const defaultErrorMapping: Record<string, string> = {
 Example:
 
 ```bash
-const tokenPromises = await Promise.all(tokenAddresses.map((token) =>
+const tokensData = await Promise.all(tokenAddresses.map((token) =>
   fetchTokenX(token);
 ));
 ```
