@@ -2,7 +2,7 @@
 
 `wagmi-extended` is a powerful library that builds on [Wagmi](https://wagmi.sh/), [Viem](https://viem.sh/), and [TanStack Query](https://tanstack.com/query/v5) to deliver extended hooks and helper functions for Ethereum and blockchain development with React.
 <br /><br />
-It simplifies tasks like fetching token metadata, handling ERC20 approvals, sending transactions, writing contracts and getting user friendly error message.
+It simplifies tasks like fetching token metadata, handling ERC20 approvals, sending transactions, writing contracts and getting user friendly error message from ABIs.
 <br /><br />
 Our library adheres to one core principle: **always wait for a transaction receipt**. This guarantees that your dApps capture transaction outcomes reliably—no manual state management or race conditions required.
 <br /><br />

@@ -1,6 +1,6 @@
 {
   "name": "wagmi-extended",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "type": "module",
   "description": "A library providing extended hooks on top of Wagmi with additional features.",
   "main": "dist/index.cjs.js",
