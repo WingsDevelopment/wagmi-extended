@@ -255,7 +255,7 @@ const tokensData = await Promise.all(tokenAddresses.map((token) =>
 ));
 ```
 
-> **Note:** : if you did not setup defaults (queryClient and wagmi config) you can call by passing client and config as params: `fetchTokenX(token, queryClient, wagmiConfig)`.
+> **Note:** : if you did not setup configs (queryClient and wagmi config) you can call by passing client and config as params: `fetchTokenX(token, queryClient, wagmiConfig)`.
 
 ## Contributing
 
