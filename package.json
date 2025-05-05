@@ -40,7 +40,7 @@
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.0.0",
-    "react": "^17.0.0 || ^18.0.0",
+    "react": "^17.0.0 || ^18.0.0" || "^19.0.0",
     "viem": "^2.0.0",
     "wagmi": "^2.0.0"
   },
