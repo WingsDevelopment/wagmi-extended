@@ -111,6 +111,11 @@ Example:
 function MyTransactionComponent() {
 const { writeContractAsync, isPending, errorMessage } = useContractWriteX({
     queriesToInvalidate: [["userBalance"], ["userActivity"]],
+    {
+      // use calbacks here in writeContractAsync or in useContractWriteX
+      onSuccess: (txHash) => console.log("Transaction successful:", txHash),
+      onError: (error) => console.error("Transaction error:", error),
+    }
 });
 
 const handleWrite = async () => {
@@ -120,10 +125,6 @@ const handleWrite = async () => {
         abi: [], // Provide your contract ABI
         functionName: "executeFunction",
         args: [/* function arguments */],
-      }, {
-        // use calbacks here in writeContractAsync or in useContractWriteX
-        onSuccess: (txHash) => console.log("Transaction successful:", txHash),
-        onError: (error) => console.error("Transaction error:", error),
       });
       console.log("Received txHash:", txHash);
     } catch (err) {
@@ -141,6 +142,28 @@ return (
 );
 }
 ```
+
+**Important:** To ensure transaction receipts are awaited correctly, **all settings and callbacks must be passed inside the hook itself**, not inside `mutate` or `mutateAsync` calls.
+
+Example of correct usage:
+
+```ts
+const { writeContractAsync } = useContractWriteX({
+  queriesToInvalidate: [["userBalance"]],
+  onSuccess: (txHash) => console.log("Tx success:", txHash),
+  onError: (err) => console.error("Tx error:", err),
+});
+```
+
+**Avoid passing callbacks like this:**
+
+```ts
+await writeContractAsync(config, {
+  onSuccess: () => {}, // ❌ This will NOT guarantee receipt handling!
+});
+```
+
+This design ensures that `wagmi-extended` can properly track and wait for the transaction receipt, giving your app reliable post-transaction state.
 
 ### useSendTransactionX Hook
 
