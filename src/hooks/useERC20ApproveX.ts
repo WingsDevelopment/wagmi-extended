@@ -54,6 +54,9 @@ export const useERC20ApproveX = (
   const { writeContractAsync: approveTokenAsync, isPending } =
     useContractWriteX({
       queriesToInvalidate: [allowanceKQ],
+      onSuccess: () => {
+        setJustApproved(true);
+      },
     });
 
   useEffect(() => {
@@ -80,19 +83,12 @@ export const useERC20ApproveX = (
         throw new Error("amountToApprove is undefined!");
       }
 
-      await approveTokenAsync(
-        {
-          address: tokenAddress,
-          abi: erc20Abi,
-          functionName: "approve",
-          args: [spenderAddress, amountToApprove],
-        },
-        {
-          onSuccess: () => {
-            setJustApproved(true);
-          },
-        }
-      );
+      await approveTokenAsync({
+        address: tokenAddress,
+        abi: erc20Abi,
+        functionName: "approve",
+        args: [spenderAddress, amountToApprove],
+      });
     } catch (e: any) {
       console.error("Error approving token:", e);
       throw e;
