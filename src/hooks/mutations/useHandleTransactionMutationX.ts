@@ -1,16 +1,28 @@
 import { waitForTransactionReceipt } from "wagmi/actions";
 import { useConfig } from "wagmi";
-import { QueryKey } from "@tanstack/query-core";
+import { Query, QueryKey } from "@tanstack/query-core";
 import { Address } from "viem";
 import { useState } from "react";
 import { getParsedErrorX } from "../utils/errorParserX.js";
 import { useInvalidateQueries } from "./useInvalidateQueries.js";
+import { useQueryClient } from "@tanstack/react-query";
 
 export type WriteExtendedAsyncParams = {
   onSuccess?: (txHash: Address) => void;
   onError?: (e: any) => void;
   onSettled?: () => void;
+
+  onSuccessAsync?: (txHash: Address) => Promise<void>;
+  onErrorAsync?: (e: any) => Promise<void>;
+  onSettledAsync?: () => Promise<void>;
+
+  /** simple list of keys to invalidate */
   queriesToInvalidate?: (QueryKey | undefined)[];
+  /** a predicate to decide which queries to invalidate */
+  invalidatePredicate?: (query: Query<unknown, unknown>) => boolean;
+  /** disable the automatic “non-metadata” fallback */
+  disableAutomaticInvalidation?: boolean;
+
   disableLogging?: boolean;
   disableWaitingForReceipt?: boolean;
 };
@@ -26,6 +38,7 @@ export function useHandleTransactionMutationX({
   settings?: WriteExtendedAsyncParams;
 }) {
   const wagmiConfig = useConfig();
+  const queryClient = useQueryClient();
 
   const { invalidateMany } = useInvalidateQueries();
   const [isPending, setIsPending] = useState(false);
@@ -60,11 +73,36 @@ export function useHandleTransactionMutationX({
       }
 
       // 3. invalidate queries
-      if (settings?.queriesToInvalidate)
-        await invalidateMany(settings?.queriesToInvalidate);
+      const {
+        queriesToInvalidate,
+        invalidatePredicate,
+        disableAutomaticInvalidation,
+      } = settings || {};
+
+      if (invalidatePredicate) {
+        // 1) predicate-based
+        await queryClient.invalidateQueries({
+          predicate: invalidatePredicate,
+        });
+      }
+      if (queriesToInvalidate) {
+        // 2) explicit key list
+        await invalidateMany(queriesToInvalidate);
+      }
+      if (
+        !disableAutomaticInvalidation &&
+        !invalidatePredicate &&
+        !queriesToInvalidate
+      ) {
+        // 3) fallback: invalidate everything except metadata queries
+        await queryClient.invalidateQueries({
+          predicate: (query) => query.meta?.category !== "metadata",
+        });
+      }
 
       // 4. call onSuccess callback
       settings?.onSuccess?.(txHash!);
+      if (settings?.onSuccessAsync) await settings.onSuccessAsync(txHash!);
 
       if (!settings?.disableLogging) {
         // 5. log result
@@ -90,10 +128,12 @@ export function useHandleTransactionMutationX({
 
       // 3. call callback
       settings?.onError?.(error);
+      if (settings?.onErrorAsync) await settings.onErrorAsync(error);
     } finally {
       setIsPending(false);
       // 1. call callback
       settings?.onSettled?.();
+      if (settings?.onSettledAsync) await settings.onSettledAsync();
     }
     return undefined;
   };

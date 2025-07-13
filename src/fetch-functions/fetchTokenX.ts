@@ -2,8 +2,8 @@ import { QueryClient } from "@tanstack/react-query";
 import { readContractQueryOptions } from "wagmi/query";
 import { Address, zeroAddress, erc20Abi } from "viem";
 import { Config } from "wagmi";
-import { getDefaults } from "../config/defaults.js";
 import { queryConfig } from "../query-config/index.js";
+import { ensureClientAndConfig } from "../utils/ensureClientAndConfig.js";
 
 export interface Token {
   symbol: string;
@@ -22,15 +22,10 @@ export async function fetchDecimalsX(
   queryClient?: QueryClient,
   wagmiConfig?: Config
 ): Promise<number | undefined> {
-  if (!queryClient || !wagmiConfig) {
-    ({ queryClient, wagmiConfig } = getDefaults());
-  }
-  if (!queryClient || !wagmiConfig) {
-    throw new Error(
-      "Could not find queryClient or wagmiConfig, either pass them as arguments or set them using setDefaults()"
-    );
-  }
-
+  ({ queryClient, wagmiConfig } = ensureClientAndConfig(
+    queryClient,
+    wagmiConfig
+  ));
   if (token === zeroAddress) return EthTokenData.decimals;
 
   const decimals = await queryClient.fetchQuery({
@@ -39,7 +34,7 @@ export async function fetchDecimalsX(
       abi: erc20Abi,
       functionName: "decimals",
     }),
-    ...queryConfig.metadataQueryConfig,
+    ...queryConfig.metaDataQuery,
   });
 
   return decimals;
@@ -50,15 +45,10 @@ export async function fetchSymbolX(
   queryClient?: QueryClient,
   wagmiConfig?: Config
 ): Promise<string> {
-  if (!queryClient || !wagmiConfig) {
-    ({ queryClient, wagmiConfig } = getDefaults());
-  }
-  if (!queryClient || !wagmiConfig) {
-    throw new Error(
-      "Could not find queryClient or wagmiConfig, either pass them as arguments or set them using setDefaults()"
-    );
-  }
-
+  ({ queryClient, wagmiConfig } = ensureClientAndConfig(
+    queryClient,
+    wagmiConfig
+  ));
   if (token === zeroAddress) return EthTokenData.symbol;
 
   const symbol = await queryClient.fetchQuery({
@@ -67,7 +57,7 @@ export async function fetchSymbolX(
       abi: erc20Abi,
       functionName: "symbol",
     }),
-    ...queryConfig.metadataQueryConfig,
+    ...queryConfig.metaDataQuery,
   });
 
   return symbol;
@@ -80,14 +70,10 @@ export async function fetchNameX(
 ): Promise<string> {
   if (token === zeroAddress) return EthTokenData.name;
 
-  if (!queryClient || !wagmiConfig) {
-    ({ queryClient, wagmiConfig } = getDefaults());
-  }
-  if (!queryClient || !wagmiConfig) {
-    throw new Error(
-      "Could not find queryClient or wagmiConfig, either pass them as arguments or set them using setDefaults()"
-    );
-  }
+  ({ queryClient, wagmiConfig } = ensureClientAndConfig(
+    queryClient,
+    wagmiConfig
+  ));
 
   const name = await queryClient.fetchQuery({
     ...readContractQueryOptions(wagmiConfig, {
@@ -95,7 +81,7 @@ export async function fetchNameX(
       abi: erc20Abi,
       functionName: "name",
     }),
-    ...queryConfig.metadataQueryConfig,
+    ...queryConfig.metaDataQuery,
   });
 
   return name;

@@ -44,7 +44,7 @@ yarn add wagmi-extended
 
 Your project must include the following peer dependencies:
 
-- **React**: ^17.0.0 || ^18.0.0
+- **React**: ^17.0.0 || ^18.0.0 || ^19.0.0
 - **Wagmi**: ^2.0.0
 - **Viem**: ^2.0.0
 - **@tanstack/react-query**: ^5.0.0

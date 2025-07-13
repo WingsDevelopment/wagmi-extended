@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Address, maxUint256, erc20Abi } from "viem";
 import { useFetchAssetAllowanceX } from "./useFetchAssetAllowanceX.js";
-import { useContractWriteX } from "./useContractWriteX.js";
+import { useContractWriteX } from "./mutations/useContractWriteX.js";
 
 /**
  * Custom hook for approving ERC20 token transfers.

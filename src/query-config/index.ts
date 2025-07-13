@@ -1,8 +1,18 @@
 export const queryConfig = {
-  metadataQueryConfig: {
-    staleTime: Infinity,
+  metaDataQuery: {
+    staleTime: Number.POSITIVE_INFINITY,
+    meta: { category: "metadata" } as const,
   },
-  sensitiveDataQueryConfig: {
+  lowSensitiveQuery: {
     staleTime: 60_000,
+    meta: { category: "lowSensitive" } as const,
+  },
+  semiSensitiveQuery: {
+    staleTime: 180_000,
+    meta: { category: "semiSensitive" } as const,
+  },
+  expensiveQuery: {
+    staleTime: 60 * 60 * 1000,
+    meta: { category: "expensive" } as const,
   },
 };

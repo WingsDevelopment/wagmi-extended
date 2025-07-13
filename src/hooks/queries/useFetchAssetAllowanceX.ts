@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Address, erc20Abi } from "viem";
 import { useAccount, useConfig } from "wagmi";
-import { queryConfig } from "../query-config/index.js";
-import { fetchAllowance } from "../fetch-functions/fetchAllowanceX.js";
+import { fetchAllowanceX } from "../../fetch-functions/erc20/fetchAllowanceX.js";
+import { queryConfig } from "../../query-config/index.js";
 
 const HookFetchAssetAllowanceQK = (
   asset?: Address,
@@ -43,13 +43,15 @@ export const useFetchAssetAllowanceX = ({
   spender?: Address;
 }) => {
   const config = useConfig();
+  const queryClient = useQueryClient();
   const { address: userAddress } = useAccount();
 
   const { data, ...rest } = useQuery({
     queryKey: HookFetchAssetAllowanceQK(asset, spender, userAddress),
-    queryFn: () => fetchAllowance(asset!, spender!, userAddress!, config),
+    queryFn: () =>
+      fetchAllowanceX(asset!, spender!, userAddress!, queryClient, config),
     enabled: Boolean(asset) && Boolean(spender) && Boolean(userAddress),
-    ...queryConfig.sensitiveDataQueryConfig,
+    ...queryConfig.lowSensitiveQuery,
   });
 
   return {

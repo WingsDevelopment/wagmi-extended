@@ -1,7 +1,7 @@
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Address } from "viem";
 import { useConfig } from "wagmi";
-import { fetchTokenX } from "../fetch-functions/fetchTokenX.js";
+import { fetchTokenX } from "../../fetch-functions/fetchTokenX.js";
 
 /**
  * Returns a query key for fetching token data.
