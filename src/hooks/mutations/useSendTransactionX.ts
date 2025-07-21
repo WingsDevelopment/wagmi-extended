@@ -101,6 +101,7 @@ export function useSendTransactionX(settings?: WriteExtendedAsyncParams) {
     ...rest,
     isPending,
     errorMessage,
+    sendTransaction,
     simulateAsyncAndSendTransaction,
   };
 }
