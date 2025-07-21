@@ -6,65 +6,28 @@ import {
 import { Address } from "viem";
 
 /**
- * Custom hook for writing to a smart contract using Wagmi.
+ * Custom hook for writing to a smart contract using Wagmi with optional simulation.
  *
- * This hook provides functionality for writing a contract using Wagmi, handling the asynchronous nature of the operation, waiting for the transaction receipt, and error handling.
- *
- * @param {WriteExtendedAsyncParams} [settings] - Optional settings for the write operation.
- * @param {boolean} [settings.disableWaitingForReceipt] - Disables waiting for the transaction receipt.
- * @param {boolean} [settings.disableLogging] - Disables logging the result of the transaction.
- * @param {Function} [settings.onSuccess] - Callback function to be called on successful transaction.
- * @param {Function} [settings.onError] - Callback function to be called on transaction error.
- * @param {Function} [settings.onSettled] - Callback function to be called after the transaction settles (whether success or failure).
- * @param {QueryKey[]} [settings.queriesToInvalidate] - Array of query keys to invalidate after the transaction receives a receipt.
- * @returns {Object} Object containing the following properties:
- * - {boolean} isPending - Indicates whether the transaction is pending.
- * - {string|undefined} errorMessage - The error message, if an error occurred during the transaction.
- * - {Function} writeContractAsync - Function to trigger the write operation.
- * 
-/**
- * Custom hook for writing a contract using Wagmi with extended functionality.
- *
- * This hook wraps Wagmi’s `useContractWriteX` with additional handling for
- * waiting for a transaction receipt, logging control, and invalidation of specified queries.
- *
- * @param {WriteExtendedAsyncParams} [settings] - Optional settings for handling the transaction.
+ * @param {WriteExtendedAsyncParams} settings - Settings for handling transaction lifecycle:
+ * @param {boolean} [settings.disableWaitingForReceipt] - Disable waiting for receipt.
+ * @param {boolean} [settings.disableLogging] - Disable logging.
+ * @param {Function} [settings.onSuccess] - Callback invoked on successful transaction receipt.
+ * @param {Function} [settings.onError] - Callback invoked on simulation or transaction error.
+ * @param {Function} [settings.onSettled] - Callback invoked after transaction settles.
+ * @param {Array<import('@tanstack/query-core').QueryKey>} [settings.queriesToInvalidate] - Query keys to invalidate after receipt.
  * @returns {Object} An object containing:
- *   - `isPending`: {boolean} indicating if the transaction is in progress.
- *   - `errorMessage`: {string|undefined} a potential error message.
- *   - `writeContractAsync`: {Function} a function to trigger the transaction.
+ *   - writeContract: Wagmi's writeContract function.
+ *   - writeContractX: Wrapped writeContract with optional simulation.
+ *   - isPending: Boolean indicating if transaction is in progress.
+ *   - errorMessage: Error message if one occurred.
  *
  * @example
- * // In your component:
- * function MyTransactionComponent() {
- *   const { writeContractAsync, isPending, errorMessage } = useContractWriteX({
- *     queriesToInvalidate: [["userBalance"], ["userActivity"]],
- *   });
- *
- *   const handleWrite = async () => {
- *     try {
- *       const txHash = await writeContractAsync({ transaction params here.. }, {
- *          // use calbacks here in writeContractAsync or in useContractWriteX
- *          onSuccess: (txHash) => console.log("Transaction successful:", txHash),
- *          onError: (error) => console.error("Transaction error:", error),
- *       });
- *       console.log("Received txHash:", txHash);
- *     } catch (err) {
- *       console.error("Failed writing transaction:", err);`
- *     }
- *   };
- *
- *   return (
- *     <div>
- *       <button onClick={handleWrite} disabled={isPending}>
- *         {isPending ? "Processing..." : "Write Transaction"}
- *       </button>
- *       {errorMessage && <p>Error: {errorMessage}</p>}
- *     </div>
- *   );
- * }
+ * const { writeContractX, isPending, errorMessage } = useContractWriteX({ onSuccess: ..., onError: ... });
+ * await writeContractX(
+ *   { abi, address, functionName, args, account, chain, value },
+ *   disable simulation? = false
+ * );
  */
-
 export function useContractWriteX(settings: WriteExtendedAsyncParams) {
   const publicClient = usePublicClient();
 
@@ -76,8 +39,9 @@ export function useContractWriteX(settings: WriteExtendedAsyncParams) {
     mutation: { onMutate, onSettled },
   });
 
-  async function simulateAsyncAndWriteContract(
-    params: Parameters<typeof wagmiWrite.writeContract>[0]
+  async function writeContractX(
+    params: Parameters<typeof wagmiWrite.writeContract>[0],
+    disableSimulation = false
   ) {
     // 0) signal start
     onMutate();
@@ -86,10 +50,12 @@ export function useContractWriteX(settings: WriteExtendedAsyncParams) {
       // 1) optional dry-run
       const { chain, ...others } = params;
 
-      await publicClient?.simulateContract({
-        ...others,
-        ...(chain != null ? { chain } : {}),
-      });
+      if (!disableSimulation) {
+        await publicClient?.simulateContract({
+          ...others,
+          ...(chain != null ? { chain } : {}),
+        });
+      }
 
       wagmiWrite.writeContract(params);
     } catch (err) {
@@ -99,7 +65,7 @@ export function useContractWriteX(settings: WriteExtendedAsyncParams) {
 
   return {
     ...wagmiWrite,
-    simulateAsyncAndWriteContract,
+    writeContractX,
     isPending,
     errorMessage,
   };

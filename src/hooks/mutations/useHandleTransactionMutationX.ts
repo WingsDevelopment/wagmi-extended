@@ -21,8 +21,6 @@ export type WriteExtendedAsyncParams = {
   /** a predicate to decide which queries to invalidate */
   invalidatePredicate?: (query: Query<unknown, unknown>) => boolean;
 
-  simulationOverrideAbis?: any;
-
   disableLogging?: boolean;
   disableWaitingForReceipt?: boolean;
 };

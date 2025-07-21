@@ -74,102 +74,187 @@ Each hook is documented with detailed JSDoc comments (including usage examples) 
 
 ## Hooks explanations and examples
 
-### useERC20ApproveX Hook
+### useContractWriteX Hook
 
-The `useERC20ApproveX` hook simplifies ERC20 token approvals by checking the allowance and handling the transaction to approve transfers.
+The `useContractWriteX` hook wraps Wagmi’s `useWriteContract` with extra features:
 
-Example:
+- **Receipt waiting**: always waits for the transaction receipt before resolving.
+- **Logging control**: disable console logging if you wish.
+- **Query invalidation**: automatically invalidates queries after receipt, either by explicit keys or by predicate.
 
-```bash
-import { useERC20ApproveX } from "wagmi-extended";
+#### Original `writeContractAsync`
 
-function ApproveButton(amountToApprove: number) {
-  const tokenAddress = "0xTokenAddress";      // Replace with your token address
-  const spenderAddress = "0xSpenderAddress";  // Replace with the spender address
-
-  const { isApproved, isApproving, approveAsync } = useERC20ApproveX(
-    tokenAddress,
-    spenderAddress,
-    parseUnits(amountToApprove.toString(), 18),
-  );
-
-  return (
-    <button onClick={approveAsync} disabled={isApproving || isApproved}>
-      {isApproving ? "Approving..." : isApproved ? "Approved" : "Approve Token"}
-    </button>
-  );
-}
-```
-
-### useContractWriteX hook
-
-The `useContractWriteX` hook wraps the contract-writing functionality from Wagmi with additional features like `receipt` waiting, `logging` control, and `query invalidation` after receipt is successfully fetched.
-
-Example:
-
-```bash
-function MyTransactionComponent() {
+```ts
 const { writeContractAsync, isPending, errorMessage } = useContractWriteX({
-    queriesToInvalidate: [["userBalance"], ["userActivity"]],
-    {
-      // use calbacks here in writeContractAsync or in useContractWriteX
-      onSuccess: (txHash) => console.log("Transaction successful:", txHash),
-      onError: (error) => console.error("Transaction error:", error),
-    }
+  queriesToInvalidate: [["userBalance"], ["userActivity"]],
+  onSuccess: (txHash) => console.log("✅", txHash),
+  onError: (err) => console.error("❌", err),
 });
 
-const handleWrite = async () => {
-    try {
-      const txHash = await writeContractAsync({
-        address: "0xContractAddress",
-        abi: [], // Provide your contract ABI
-        functionName: "executeFunction",
-        args: [/* function arguments */],
-      });
-      console.log("Received txHash:", txHash);
-    } catch (err) {
-      console.error("Failed writing transaction:", err);`
-    }
-};
+// will wait for the receipt, then invalidate `userBalance` & `userActivity`
+await writeContractAsync({
+  address: "0xContractAddress",
+  abi: MyContractAbi,
+  functionName: "executeFunction",
+  args: [
+    /* ... */
+  ],
+});
+```
 
-return (
-    <div>
-    <button onClick={handleWrite} disabled={isPending}>
-        {isPending ? "Processing..." : "Write Transaction"}
-    </button>
-    {errorMessage && <p>Error: {errorMessage}</p>}
-    </div>
+#### New `writeContractX` method
+
+Use `writeContractX` if you need control over the simulation step:
+
+```ts
+const { writeContractX, isPending, errorMessage } = useContractWriteX({
+  onSuccess: (tx) => console.log("✔ Receipt confirmed:", tx),
+  onError: (e) => console.error("✖ Failed:", e),
+});
+
+// simulate + send:
+await writeContractX(
+  {
+    address: "0xContractAddress",
+    abi: MyContractAbi,
+    functionName: "executeFunction",
+    args: [
+      /* ... */
+    ],
+    account: myAddress,
+    chain: myChain,
+    value: 0n,
+  },
+  /* disableSimulation? */ false
 );
-}
+
+// send immediately without simulation:
+await writeContractX(params, /* disableSimulation= */ true);
 ```
 
-**Important:** To ensure transaction receipts are awaited correctly, **all settings and callbacks must be passed inside the hook itself**, not inside `mutate` or `mutateAsync` calls.
+- **`writeContractAsync`** = always runs the built-in dry-run, then write.
+- **`writeContractX`** = you can pass a boolean to skip the simulation step.
 
-Example of correct usage:
-
-```ts
-const { writeContractAsync } = useContractWriteX({
-  queriesToInvalidate: [["userBalance"]],
-  onSuccess: (txHash) => console.log("Tx success:", txHash),
-  onError: (err) => console.error("Tx error:", err),
-});
-```
-
-**Avoid passing callbacks like this:**
-
-```ts
-await writeContractAsync(config, {
-  onSuccess: () => {}, // ❌ This will NOT guarantee receipt handling!
-});
-```
-
-This design ensures that `wagmi-extended` can properly track and wait for the transaction receipt, giving your app reliable post-transaction state.
+---
 
 ### useSendTransactionX Hook
 
-The `useSendTransactionX` hook wraps the transaction-sending functionality from Wagmi with additional features like `receipt` waiting, `logging` control, and `query invalidation` after receipt is successfully fetched.
+The `useSendTransactionX` hook wraps Wagmi’s `useSendTransaction` with the same lifecycle features:
 
-Very similar to useContractWriteX, see [playground](https://codesandbox.io/p/sandbox/5jr3lg) for example.
+- **`sendTransaction`** = Wagmi’s raw send
+- **`sendTransactionX`** = optionally simulate (contract call) or just `eth_call`, then `sendTransaction` + receipt waiting + invalidations.
+
+```ts
+const {
+  sendTransaction, // raw
+  sendTransactionX, // wrapped
+  isPending,
+  errorMessage,
+} = useSendTransactionX({
+  queriesToInvalidate: [["ethBalance"]],
+  onSuccess: (tx) => console.log("🎉 Tx sent & confirmed:", tx),
+  onError: (e) => console.error("🚫 Simulation or send failed:", e),
+});
+
+// simulate & send an ETH transfer:
+await sendTransactionX(
+  { to: recipient, value: 1n * 10n ** 18n, account: myAddress, chain: myChain },
+  // for contract calls, pass simulation params:
+  { abi: MyAbi, functionName: "deposit", args: [1000n], chain: myChain }
+);
+
+// or just raw send (no simulationParams):
+await sendTransactionX({ to, value, account });
+```
+
+---
+
+## Transaction mutation settings
+
+In all “X” hooks you pass a `WriteExtendedAsyncParams` object:
+
+```ts
+export type WriteExtendedAsyncParams = {
+  onSuccess?: (txHash: Address) => void;
+  onError?: (e: any) => void;
+  onSettled?: () => void;
+  onSuccessAsync?: (txHash: Address) => Promise<void>;
+  onErrorAsync?: (e: any) => Promise<void>;
+  onSettledAsync?: () => Promise<void>;
+
+  /** simple list of query keys to invalidate after receipt */
+  queriesToInvalidate?: (QueryKey | undefined)[];
+
+  /** predicate-based invalidation:
+      any active query where `predicate(query)` returns true
+      will be invalidated after the tx settles. */
+  invalidatePredicate?: (query: Query<unknown, unknown>) => boolean;
+
+  disableLogging?: boolean;
+  disableWaitingForReceipt?: boolean;
+};
+```
+
+---
+
+### useFetchERC4626DataX Hook
+
+Fetch summary data from an ERC-4626 vault (total assets, shares, allowances, balances, etc.):
+
+```ts
+import { useFetchERC4626DataX } from "wagmi-extended";
+
+function VaultInfo({ vaultAddress, user, spender }) {
+  const { data, isLoading, error } = useFetchERC4626DataX({
+    vault,
+    user,
+    spender,
+  });
+
+  if (isLoading) return <p>Loading vault data…</p>;
+  if (error) return <p>Error: {error.message}</p>;
+
+  return (
+    <div>
+      <p>Total assets: {data.totalAssets}</p>
+      <p>Current shares: {data.shares}</p>
+      <p>Your balance: {data.userBalance}</p>
+      <p>Your allowance: {data.allowance}</p>
+    </div>
+  );
+}
+```
+
+---
+
+### useFetchERC20DataX Hook
+
+Fetch summary data for a generic ERC-20 token (decimals, name, symbol, balances, allowances):
+
+```ts
+import { useFetchERC20DataX } from "wagmi-extended";
+
+function TokenInfo({ token, user, spender }) {
+  const { data, isLoading, error } = useFetchERC20DataX({
+    address: token,
+    user,
+    spender,
+  });
+
+  if (isLoading) return <p>Loading token info…</p>;
+  if (error) return <p>Error: {error.message}</p>;
+
+  return (
+    <div>
+      <p>Name: {data.name}</p>
+      <p>Symbol: {data.symbol}</p>
+      <p>Decimals: {data.decimals}</p>
+      <p>Your balance: {data.balance}</p>
+      <p>Your allowance: {data.allowance}</p>
+    </div>
+  );
+}
+```
 
 ### useTokenX Hook
 

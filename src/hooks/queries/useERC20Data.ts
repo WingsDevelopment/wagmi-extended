@@ -3,7 +3,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Address } from "viem";
 import { useAccount, useConfig } from "wagmi";
 import { fetchERC20DataX } from "../../fetch-functions/erc20/fetchERC20DataX.js";
-import { queryConfig } from "../../query-config/index.js";
 
 const HookFetchERC20DataQK = (
   address?: Address,
