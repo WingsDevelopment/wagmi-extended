@@ -4,6 +4,7 @@
 export * from "./hooks/mutations/useContractWriteX.js";
 export * from "./hooks/mutations/useSendTransactionX.js";
 export * from "./hooks/mutations/useERC20ApproveX.js";
+export * from "./hooks/mutations/useHandleTransactionMutationX.js";
 
 /* ------------- */
 /*     Queries   */
