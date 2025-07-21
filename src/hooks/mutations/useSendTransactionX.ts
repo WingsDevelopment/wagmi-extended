@@ -1,8 +1,9 @@
-import { useSendTransaction } from "wagmi";
+import { usePublicClient, useSendTransaction, useWriteContract } from "wagmi";
 import {
   useHandleTransactionMutationX,
   WriteExtendedAsyncParams,
 } from "./useHandleTransactionMutationX.js";
+import { writeContract } from "wagmi/actions";
 
 /**
  * Custom hook for sending a transaction using Wagmi.
@@ -52,22 +53,54 @@ import {
  */
 
 export function useSendTransactionX(settings?: WriteExtendedAsyncParams) {
+  const publicClient = usePublicClient();
+
   const { isPending, errorMessage, onMutate, onSettled } =
     useHandleTransactionMutationX({
       settings,
     });
 
-  const { sendTransactionAsync, ...rest } = useSendTransaction({
+  const { sendTransaction, ...rest } = useSendTransaction({
     mutation: {
       onMutate,
       onSettled,
     },
   });
 
+  /**
+   * Wraps sendTransaction with an optional simulation.
+   */
+  async function simulateAsyncAndSendTransaction(
+    params: Parameters<typeof sendTransaction>[0],
+    simulationParams: Parameters<typeof writeContract>[1]
+  ) {
+    onMutate();
+
+    try {
+      if (params.to) {
+        //simulate!
+        await publicClient?.simulateContract({
+          address: params.to,
+          abi: simulationParams.abi,
+          functionName: simulationParams.functionName,
+          args: simulationParams.args ?? [],
+          account: params.account,
+          ...(simulationParams.chain != null
+            ? { chain: simulationParams.chain }
+            : {}),
+        });
+      }
+      // actual send!
+      await sendTransaction(params);
+    } catch (err) {
+      await onSettled(undefined, err, params);
+    }
+  }
+
   return {
     ...rest,
     isPending,
     errorMessage,
-    sendTransactionAsync,
+    simulateAsyncAndSendTransaction,
   };
 }

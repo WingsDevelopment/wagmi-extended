@@ -3,9 +3,9 @@ import { useConfig } from "wagmi";
 import { Query, QueryKey } from "@tanstack/query-core";
 import { Address } from "viem";
 import { useState } from "react";
-import { getParsedErrorX } from "../utils/errorParserX.js";
 import { useInvalidateQueries } from "./useInvalidateQueries.js";
 import { useQueryClient } from "@tanstack/react-query";
+import { getParsedErrorX } from "../../utils/errorParserX.js";
 
 export type WriteExtendedAsyncParams = {
   onSuccess?: (txHash: Address) => void;
@@ -20,8 +20,8 @@ export type WriteExtendedAsyncParams = {
   queriesToInvalidate?: (QueryKey | undefined)[];
   /** a predicate to decide which queries to invalidate */
   invalidatePredicate?: (query: Query<unknown, unknown>) => boolean;
-  /** disable the automatic “non-metadata” fallback */
-  disableAutomaticInvalidation?: boolean;
+
+  simulationOverrideAbis?: any;
 
   disableLogging?: boolean;
   disableWaitingForReceipt?: boolean;
@@ -73,11 +73,7 @@ export function useHandleTransactionMutationX({
       }
 
       // 3. invalidate queries
-      const {
-        queriesToInvalidate,
-        invalidatePredicate,
-        disableAutomaticInvalidation,
-      } = settings || {};
+      const { queriesToInvalidate, invalidatePredicate } = settings || {};
 
       if (invalidatePredicate) {
         // 1) predicate-based
@@ -88,16 +84,6 @@ export function useHandleTransactionMutationX({
       if (queriesToInvalidate) {
         // 2) explicit key list
         await invalidateMany(queriesToInvalidate);
-      }
-      if (
-        !disableAutomaticInvalidation &&
-        !invalidatePredicate &&
-        !queriesToInvalidate
-      ) {
-        // 3) fallback: invalidate everything except metadata queries
-        await queryClient.invalidateQueries({
-          predicate: (query) => query.meta?.category !== "metadata",
-        });
       }
 
       // 4. call onSuccess callback

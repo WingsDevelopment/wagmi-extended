@@ -1,8 +1,9 @@
-import { useWriteContract } from "wagmi";
+import { usePublicClient, useSimulateContract, useWriteContract } from "wagmi";
 import {
   WriteExtendedAsyncParams,
   useHandleTransactionMutationX,
 } from "./useHandleTransactionMutationX.js";
+import { Address } from "viem";
 
 /**
  * Custom hook for writing to a smart contract using Wagmi.
@@ -64,23 +65,42 @@ import {
  * }
  */
 
-export function useContractWriteX(settings?: WriteExtendedAsyncParams) {
-  const { isPending, errorMessage, onMutate, onSettled } =
-    useHandleTransactionMutationX({
-      settings,
-    });
+export function useContractWriteX(settings: WriteExtendedAsyncParams) {
+  const publicClient = usePublicClient();
 
-  const { writeContractAsync, ...rest } = useWriteContract({
-    mutation: {
-      onMutate,
-      onSettled,
-    },
+  const { isPending, errorMessage, onMutate, onSettled } =
+    useHandleTransactionMutationX({ settings });
+
+  // Underlying Wagmi write hook:
+  const wagmiWrite = useWriteContract({
+    mutation: { onMutate, onSettled },
   });
 
+  async function simulateAsyncAndWriteContract(
+    params: Parameters<typeof wagmiWrite.writeContract>[0]
+  ) {
+    // 0) signal start
+    onMutate();
+
+    try {
+      // 1) optional dry-run
+      const { chain, ...others } = params;
+
+      await publicClient?.simulateContract({
+        ...others,
+        ...(chain != null ? { chain } : {}),
+      });
+
+      wagmiWrite.writeContract(params);
+    } catch (err) {
+      await onSettled(undefined, err, params);
+    }
+  }
+
   return {
-    ...rest,
+    ...wagmiWrite,
+    simulateAsyncAndWriteContract,
     isPending,
     errorMessage,
-    writeContractAsync,
   };
 }
