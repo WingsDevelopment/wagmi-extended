@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2019",
+    "target": "es2020",
     "module": "nodenext",
     "baseUrl": ".", // important when using paths
     "paths": {
