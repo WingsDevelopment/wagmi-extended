@@ -22,6 +22,7 @@ Whether you're building a DeFi platform, a governance system, or any blockchain 
 - [Non-hook functions setup](#non-hook-functions-setup)
   - [Error handling](#error-handling)
   - [fetchTokenX](#fetchTokenX)
+  - [fetchDeploymentBlockX](#fetchDeploymentBlockX)
 - [Contributing](#contributing)
 - [Donations](#support--donations)
 - [License](#license)
@@ -365,14 +366,48 @@ const tokensData = await Promise.all(tokenAddresses.map((token) =>
 
 > **Note:** : if you did not setup configs (queryClient and wagmi config) you can call by passing client and config as params: `fetchTokenX(token, queryClient, wagmiConfig)`.
 
+### fetchDeploymentBlockX
+
+The `fetchDeploymentBlockX` function finds and caches the earliest block where a contract was deployed  
+(i.e., the first block containing bytecode at a given address).
+
+It uses an **exponential descent** followed by a **binary search**, making it optimal for locating deployment blocks with minimal RPC calls.
+
+- **Exponential descent**: quickly finds a safe lower bound with no code.
+- **Binary search**: efficiently pinpoints the exact deployment block in logarithmic steps.
+
+#### Example
+
+```ts
+import { fetchDeploymentBlockX } from "wagmi-extended";
+
+async function main() {
+  const deploymentBlock = await fetchDeploymentBlockX(
+    "0xYourContractAddress",
+    0n
+  );
+
+  console.log("Contract was deployed at block:", deploymentBlock.toString());
+}
+
+main();
+```
+
+Performance
+
+Performs O(log N) RPC calls, where N is the distance between the latest block and the deployment block.
+
+- Much more efficient than linear scanning.
+- Automatically cached by React Query under the key:
+
 ## Contributing
 
 This project is open source and we welcome contributions from the community! If you have ideas, improvements, or bug fixes, please feel free to open pull requests or file issues. Your help makes this project better for everyone.
 
-- **Open Issues & PRs:**  
+- **Open Issues & PRs:**
   You can report bugs or request features by opening an issue on [GitHub Issues](https://github.com/WingsDevelopment/wagmi-extended/issues). Similarly, feel free to open a pull request (PR) with your changes.
 
-- **Star the Project:**  
+- **Star the Project:**
   If you like `wagmi-extended` or find it useful, please consider starring the repository on [GitHub](https://github.com/WingsDevelopment/wagmi-extended). It helps the project gain visibility and motivates further development.
 
 Thank you for your support and contributions!
@@ -381,10 +416,10 @@ Thank you for your support and contributions!
 
 If you enjoy this project and would like to support its ongoing development, please consider donating!
 
-- **Buy Me a Coffee:**  
+- **Buy Me a Coffee:**
   [buymeacoffee.com/srdjanr160N](https://buymeacoffee.com/srdjanr160N)
 
-- **Ethereum Donation Address:**  
+- **Ethereum Donation Address:**
   `0x410A11ed53a9a59094F24D2ae4ACbeF7f84955a1`
 
 Any donation, no matter how small, is greatly appreciated!
@@ -398,3 +433,7 @@ Anyone is free to copy, modify, publish, use, compile, sell, or distribute this 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
+
+```
+
+```
