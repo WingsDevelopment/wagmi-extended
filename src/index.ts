@@ -27,6 +27,7 @@ export * from "./fetch-functions/erc4626/fetchERC4626MaxMintX.js";
 export * from "./fetch-functions/erc4626/fetchERC4626MaxRedeemX.js";
 export * from "./fetch-functions/erc4626/fetchERC4626MaxWithdrawX.js";
 export * from "./fetch-functions/erc4626/fetchERC4626DataX.js";
+export * from "./fetch-functions/common/fetchDeploymentBlockX.js";
 
 /* ------------- */
 /*       Utils   */
@@ -37,3 +38,4 @@ export * from "./utils/errorParserX.js";
 /*       Config  */
 /* ------------- */
 export * from "./config/defaults.js";
+export * from "./query-config/index.js";
