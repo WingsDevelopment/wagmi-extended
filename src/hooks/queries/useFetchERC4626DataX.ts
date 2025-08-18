@@ -4,7 +4,7 @@ import { Address } from "viem";
 import { useAccount, useConfig } from "wagmi";
 import { fetchERC4626DataX } from "../../fetch-functions/erc4626/fetchERC4626DataX.js";
 
-const HookFetchERC4626DataQK = (
+export const HookFetchERC4626DataQK = (
   vault?: Address,
   userAddress?: Address,
   spender?: Address

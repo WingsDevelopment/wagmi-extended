@@ -4,7 +4,7 @@ import { useAccount, useConfig } from "wagmi";
 import { fetchAllowanceX } from "../../fetch-functions/erc20/fetchAllowanceX.js";
 import { queryConfig } from "../../query-config/index.js";
 
-const HookFetchAssetAllowanceQK = (
+export const HookFetchAssetAllowanceQK = (
   asset?: Address,
   spender?: Address,
   userAddress?: Address

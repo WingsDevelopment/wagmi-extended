@@ -4,7 +4,7 @@ import { Address } from "viem";
 import { useAccount, useConfig } from "wagmi";
 import { fetchERC20DataX } from "../../fetch-functions/erc20/fetchERC20DataX.js";
 
-const HookFetchERC20DataQK = (
+export const HookFetchERC20DataQK = (
   address?: Address,
   userAddress?: Address,
   spender?: Address
