@@ -238,7 +238,7 @@ export async function fetchDeploymentBlockX(
   floor: bigint = 0n,
   queryClient?: QueryClient,
   wagmiConfig?: Config,
-  options?: { disableLocalStorage?: boolean }
+  options?: { disableLocalStorage?: boolean; chainId?: number }
 ): Promise<bigint> {
   if (!address) throw new Error("Address is required");
 
@@ -248,7 +248,7 @@ export async function fetchDeploymentBlockX(
   ));
 
   const client = getPublicClient(wagmiConfig);
-  const chainId = client?.chain?.id;
+  const chainId = options?.chainId || client?.chain?.id;
   if (!chainId) throw new Error("Client chain ID is missing");
 
   const key = deploymentBlockKey(chainId, address, floor);
