@@ -7,7 +7,7 @@ import { ensureClientAndConfig } from "../../utils/ensureClientAndConfig.js";
 
 /** Reusable React Query key helper for deployment block lookups. */
 export const deploymentBlockKey = (
-  chainId: number | undefined,
+  chainId: bigint | undefined,
   address: Address | undefined,
   floor: bigint
 ) => ["deploymentBlock", chainId, address?.toLowerCase(), floor] as const;
@@ -18,7 +18,7 @@ const canUseBrowserStorage =
 
 /** Internal: build a stable localStorage key */
 const lsKeyForDeploymentBlock = (
-  chainId: number,
+  chainId: bigint,
   address: Address,
   floor: bigint
 ) =>
@@ -26,7 +26,7 @@ const lsKeyForDeploymentBlock = (
 
 /** Internal: read bigint from localStorage (SSR safe) */
 function readDeploymentBlockFromLS(
-  chainId: number,
+  chainId: bigint,
   address: Address,
   floor: bigint
 ): bigint | undefined {
@@ -43,7 +43,7 @@ function readDeploymentBlockFromLS(
 
 /** Internal: write bigint to localStorage (SSR safe) */
 function writeDeploymentBlockToLS(
-  chainId: number,
+  chainId: bigint,
   address: Address,
   floor: bigint,
   value: bigint
@@ -150,7 +150,7 @@ export function getDeploymentBlockQueryOptionsX(
   address: Address,
   floor: bigint = 0n,
   wagmiConfig?: Config,
-  options?: { disableLocalStorage?: boolean }
+  options?: { disableLocalStorage?: boolean; chainId?: bigint }
 ) {
   if (!address) throw new Error("Address is required");
   const disableLocalStorage = options?.disableLocalStorage ?? false;
@@ -159,21 +159,21 @@ export function getDeploymentBlockQueryOptionsX(
   // We only need chainId for the key; if wagmiConfig is missing here,
   // we allow it since fetcher re-resolves. But key stability benefits from chainId.
   const client = wagmiConfig ? getPublicClient(wagmiConfig) : undefined;
-  const chainId = client?.chain?.id;
+  const chainId = options?.chainId || client?.chain?.id;
+  const finalChainId = chainId ? BigInt(chainId) : undefined;
 
   return {
-    queryKey: deploymentBlockKey(chainId, address, floor),
+    queryKey: deploymentBlockKey(finalChainId, address, floor),
     queryFn: async () => {
       if (!wagmiConfig)
         throw new Error("wagmiConfig is required at execution time");
 
       const c = getPublicClient(wagmiConfig);
-      const cid = c?.chain?.id;
-      if (!cid) throw new Error("Client chain ID is missing");
+      if (!finalChainId) throw new Error("Client chain ID is missing");
 
       // Try localStorage first (no refetches if we already know it)
       if (!disableLocalStorage) {
-        const fromLS = readDeploymentBlockFromLS(cid, address, floor);
+        const fromLS = readDeploymentBlockFromLS(finalChainId, address, floor);
         if (fromLS !== undefined) return fromLS;
       }
 
@@ -186,7 +186,7 @@ export function getDeploymentBlockQueryOptionsX(
 
       // Persist to localStorage for subsequent sessions
       if (!disableLocalStorage) {
-        writeDeploymentBlockToLS(cid, address, floor, discovered);
+        writeDeploymentBlockToLS(finalChainId, address, floor, discovered);
       }
       return discovered;
     },
@@ -236,7 +236,7 @@ export function getDeploymentBlockQueryOptionsX(
 export async function fetchDeploymentBlockX(
   address: Address,
   floor: bigint = 0n,
-  options?: { disableLocalStorage?: boolean; chainId?: number },
+  options?: { disableLocalStorage?: boolean; chainId?: bigint },
   queryClient?: QueryClient,
   wagmiConfig?: Config
 ): Promise<bigint> {
@@ -249,14 +249,15 @@ export async function fetchDeploymentBlockX(
 
   const client = getPublicClient(wagmiConfig);
   const chainId = options?.chainId || client?.chain?.id;
-  if (!chainId) throw new Error("Client chain ID is missing");
+  const finalChainId = chainId ? BigInt(chainId) : undefined;
+  if (!finalChainId) throw new Error("Client chain ID is missing");
 
-  const key = deploymentBlockKey(chainId, address, floor);
+  const key = deploymentBlockKey(finalChainId, address, floor);
   const disableLocalStorage = options?.disableLocalStorage ?? false;
 
   // Seed cache from localStorage so fetchQuery returns immediately w/o running queryFn
   if (!disableLocalStorage) {
-    const fromLS = readDeploymentBlockFromLS(chainId, address, floor);
+    const fromLS = readDeploymentBlockFromLS(finalChainId, address, floor);
     if (fromLS !== undefined) {
       queryClient.setQueryData(key, fromLS);
     }
