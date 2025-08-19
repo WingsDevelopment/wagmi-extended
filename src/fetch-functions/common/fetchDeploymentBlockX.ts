@@ -236,9 +236,9 @@ export function getDeploymentBlockQueryOptionsX(
 export async function fetchDeploymentBlockX(
   address: Address,
   floor: bigint = 0n,
+  options?: { disableLocalStorage?: boolean; chainId?: number },
   queryClient?: QueryClient,
-  wagmiConfig?: Config,
-  options?: { disableLocalStorage?: boolean; chainId?: number }
+  wagmiConfig?: Config
 ): Promise<bigint> {
   if (!address) throw new Error("Address is required");
 
