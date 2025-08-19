@@ -376,6 +376,16 @@ It uses an **exponential descent** followed by a **binary search**, making it op
 - **Exponential descent**: quickly finds a safe lower bound with no code.
 - **Binary search**: efficiently pinpoints the exact deployment block in logarithmic steps.
 
+#### Features
+
+- **React Query caching**: results stored under the key  
+  `["deploymentBlock", chainId, address.toLowerCase(), floor]`.
+- **LocalStorage caching (browser only)**:
+  - On the **first run**, the block is computed and stored in both React Query and `localStorage`.
+  - On **subsequent runs**, the value is read from `localStorage` to fully prevent RPC refetches.
+- **SSR-safe**: all localStorage access is gated by `typeof window !== 'undefined'`.
+- **Opt-out**: pass `{ disableLocalStorage: true }` to bypass read/write of `localStorage`.
+
 #### Example
 
 ```ts

@@ -12,6 +12,53 @@ export const deploymentBlockKey = (
   floor: bigint
 ) => ["deploymentBlock", chainId, address?.toLowerCase(), floor] as const;
 
+/** Internal: SSR-safe localStorage guards */
+const canUseBrowserStorage =
+  typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+
+/** Internal: build a stable localStorage key */
+const lsKeyForDeploymentBlock = (
+  chainId: number,
+  address: Address,
+  floor: bigint
+) =>
+  `wagmi-extended:deploymentBlock:${chainId}:${address.toLowerCase()}:${floor.toString()}`;
+
+/** Internal: read bigint from localStorage (SSR safe) */
+function readDeploymentBlockFromLS(
+  chainId: number,
+  address: Address,
+  floor: bigint
+): bigint | undefined {
+  if (!canUseBrowserStorage) return undefined;
+  try {
+    const raw = window.localStorage.getItem(
+      lsKeyForDeploymentBlock(chainId, address, floor)
+    );
+    return raw ? BigInt(raw) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Internal: write bigint to localStorage (SSR safe) */
+function writeDeploymentBlockToLS(
+  chainId: number,
+  address: Address,
+  floor: bigint,
+  value: bigint
+) {
+  if (!canUseBrowserStorage) return;
+  try {
+    window.localStorage.setItem(
+      lsKeyForDeploymentBlock(chainId, address, floor),
+      value.toString()
+    );
+  } catch {
+    /* ignore quota/security errors */
+  }
+}
+
 /**
  * Internal helper: checks if there is bytecode at `address` on `blockNumber`.
  */
@@ -87,18 +134,26 @@ async function findDeploymentBlockRpcX(
  *
  * Use with `queryClient.fetchQuery(...)`.
  *
- * @param address     - Contract address to probe.
- * @param floor       - Optional lower bound (inclusive) to speed up search. Defaults to `0n`.
- * @param wagmiConfig - Wagmi `Config` (optional; resolved via `ensureClientAndConfig` if omitted).
+ * @param address            - Contract address to probe.
+ * @param floor              - Optional lower bound (inclusive) to speed up search. Defaults to `0n`.
+ * @param wagmiConfig        - Wagmi `Config` (optional; resolved via `ensureClientAndConfig` if omitted).
+ * @param options.disableLocalStorage - If `true`, skip reading/writing localStorage (default `false`).
  *
- * @returns A fully-configured query options object (key + fn + metadata).
+ * Local Storage behavior (SSR-safe):
+ * - If not disabled and a value exists in `localStorage`, the `queryFn` will
+ *   return it immediately without performing RPC calls.
+ * - After an on-chain discovery, the result is written to `localStorage`
+ *   (unless disabled). This pairs nicely with `staleTime: Infinity` to
+ *   avoid future refetches.
  */
 export function getDeploymentBlockQueryOptionsX(
   address: Address,
   floor: bigint = 0n,
-  wagmiConfig?: Config
+  wagmiConfig?: Config,
+  options?: { disableLocalStorage?: boolean }
 ) {
   if (!address) throw new Error("Address is required");
+  const disableLocalStorage = options?.disableLocalStorage ?? false;
 
   // Resolve config (caller may pass undefined; we'll normalize later in fetcher too)
   // We only need chainId for the key; if wagmiConfig is missing here,
@@ -111,9 +166,31 @@ export function getDeploymentBlockQueryOptionsX(
     queryFn: async () => {
       if (!wagmiConfig)
         throw new Error("wagmiConfig is required at execution time");
-      return findDeploymentBlockRpcX(address, wagmiConfig, floor);
+
+      const c = getPublicClient(wagmiConfig);
+      const cid = c?.chain?.id;
+      if (!cid) throw new Error("Client chain ID is missing");
+
+      // Try localStorage first (no refetches if we already know it)
+      if (!disableLocalStorage) {
+        const fromLS = readDeploymentBlockFromLS(cid, address, floor);
+        if (fromLS !== undefined) return fromLS;
+      }
+
+      // Otherwise do the discovery via RPC
+      const discovered = await findDeploymentBlockRpcX(
+        address,
+        wagmiConfig,
+        floor
+      );
+
+      // Persist to localStorage for subsequent sessions
+      if (!disableLocalStorage) {
+        writeDeploymentBlockToLS(cid, address, floor, discovered);
+      }
+      return discovered;
     },
-    ...queryConfig.metaDataQuery,
+    ...queryConfig.metaDataQuery, // typically sets staleTime: Infinity, gcTime, etc.
   } as const;
 }
 
@@ -126,21 +203,31 @@ export function getDeploymentBlockQueryOptionsX(
  *
  * #### Caching
  * - Query key: `["deploymentBlock", chainId, address.toLowerCase(), floor]`
- * - For long-lived results, we apply `queryConfig.metaDataQuery` (tweak as needed).
+ * - Long-lived results: `queryConfig.metaDataQuery` (e.g., `staleTime: Infinity`)
  *
- * #### Performance
- * - **O(log N)** `eth_getCode` calls, where `N` is the gap between the latest
- *   block and the deployment block—optimal among comparison-based strategies.
+ * #### Local Storage (SSR-safe)
+ * - Before calling `fetchQuery`, we seed the Query Cache from `localStorage`
+ *   (unless `disableLocalStorage` is true). When a cached value is present,
+ *   `fetchQuery` will *not* execute the `queryFn`, fully preventing RPC refetches.
+ * - After on-chain discovery, the result is written back to `localStorage`
+ *   (unless disabled).
  *
  * @example
  * ```ts
- * const block = await fetchDeploymentBlockX("0xContract...", 0n, queryClient, wagmiConfig);
+ * const block = await fetchDeploymentBlockX(
+ *   "0xContract...",
+ *   0n,
+ *   queryClient,
+ *   wagmiConfig,
+ *   { disableLocalStorage: false }
+ * );
  * ```
  *
- * @param address - Contract address to probe.
- * @param floor - Optional lower bound (inclusive) to speed up search. Defaults to `0n`.
- * @param queryClient - Optional TanStack `QueryClient`. If omitted, resolved by `ensureClientAndConfig`.
- * @param wagmiConfig - Optional Wagmi `Config`. If omitted, resolved by `ensureClientAndConfig`.
+ * @param address                   - Contract address to probe.
+ * @param floor                     - Optional lower bound (inclusive). Defaults to `0n`.
+ * @param queryClient               - Optional TanStack `QueryClient`. If omitted, resolved by `ensureClientAndConfig`.
+ * @param wagmiConfig               - Optional Wagmi `Config`. If omitted, resolved by `ensureClientAndConfig`.
+ * @param options.disableLocalStorage - If `true`, skip reading/writing localStorage (default `false`).
  *
  * @returns The earliest block number (bigint) where bytecode exists.
  *
@@ -150,7 +237,8 @@ export async function fetchDeploymentBlockX(
   address: Address,
   floor: bigint = 0n,
   queryClient?: QueryClient,
-  wagmiConfig?: Config
+  wagmiConfig?: Config,
+  options?: { disableLocalStorage?: boolean }
 ): Promise<bigint> {
   if (!address) throw new Error("Address is required");
 
@@ -159,15 +247,27 @@ export async function fetchDeploymentBlockX(
     wagmiConfig
   ));
 
-  // Resolve chainId for a stable cache key
   const client = getPublicClient(wagmiConfig);
   const chainId = client?.chain?.id;
   if (!chainId) throw new Error("Client chain ID is missing");
 
+  const key = deploymentBlockKey(chainId, address, floor);
+  const disableLocalStorage = options?.disableLocalStorage ?? false;
+
+  // Seed cache from localStorage so fetchQuery returns immediately w/o running queryFn
+  if (!disableLocalStorage) {
+    const fromLS = readDeploymentBlockFromLS(chainId, address, floor);
+    if (fromLS !== undefined) {
+      queryClient.setQueryData(key, fromLS);
+    }
+  }
+
   return queryClient.fetchQuery({
-    ...getDeploymentBlockQueryOptionsX(address, floor, wagmiConfig),
+    ...getDeploymentBlockQueryOptionsX(address, floor, wagmiConfig, {
+      disableLocalStorage,
+    }),
     // Ensure the final key includes a concrete chainId
-    queryKey: deploymentBlockKey(chainId, address, floor),
+    queryKey: key,
     // Reinstate metadata (in case your ensure/util merges)
     ...queryConfig.metaDataQuery,
   });
