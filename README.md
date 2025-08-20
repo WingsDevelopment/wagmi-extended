@@ -8,6 +8,8 @@ Our library adheres to one core principle: **always wait for a transaction recei
 <br /><br />
 Whether you're building a DeFi platform, a governance system, or any blockchain solution, `wagmi-extended` offers a consistent, reliable, and developer-friendly interface, trusted in production with over $500M in volume.
 
+> **Note:** This project is **actively maintained**. The creator can be reached directly on [Discord](https://discord.gg/XQYzXgq2Ve). We are open to **suggestions and requests**, and love feedback from the community.
+
 ## Table of Contents
 
 - [Installation](#installation)
@@ -433,6 +435,11 @@ If you enjoy this project and would like to support its ongoing development, ple
   `0x410A11ed53a9a59094F24D2ae4ACbeF7f84955a1`
 
 Any donation, no matter how small, is greatly appreciated!
+
+## Community
+
+- **X (Twitter):** Follow and share updates with the hashtag [#wagmiExtended](https://x.com/hashtag/wagmiExtended). Use it to discover tips, release notes, and community projects.
+- **Discord:** Join the community and reach the creator directly at [discord.gg/XQYzXgq2Ve](https://discord.gg/XQYzXgq2Ve).
 
 ## License
 
