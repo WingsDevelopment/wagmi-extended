@@ -92,7 +92,7 @@ const { writeContractAsync, isPending, errorMessage } = useContractWriteX({
   queriesToInvalidate: [["userBalance"], ["userActivity"]],
   onSuccess: (txHash) => console.log("✅", txHash),
   onError: (err) => console.error("❌", err),
-});
+})
 
 // will wait for the receipt, then invalidate `userBalance` & `userActivity`
 await writeContractAsync({
@@ -102,7 +102,7 @@ await writeContractAsync({
   args: [
     /* ... */
   ],
-});
+})
 ```
 
 #### New `writeContractX` method
@@ -113,7 +113,7 @@ Use `writeContractX` if you need control over the simulation step:
 const { writeContractX, isPending, errorMessage } = useContractWriteX({
   onSuccess: (tx) => console.log("✔ Receipt confirmed:", tx),
   onError: (e) => console.error("✖ Failed:", e),
-});
+})
 
 // simulate + send:
 await writeContractX(
@@ -129,14 +129,15 @@ await writeContractX(
     value: 0n,
   },
   /* disableSimulation? */ false
-);
+)
 
 // send immediately without simulation:
-await writeContractX(params, /* disableSimulation= */ true);
+await writeContractX(params, /* disableSimulation= */ true)
 ```
 
 - **`writeContractAsync`** = always runs the built-in dry-run, then write.
 - **`writeContractX`** = you can pass a boolean to skip the simulation step.
+- **`writeContract`** = or use writeContract to skip the simulation step. (still will wait for transaction recepit and invalidate query)
 
 ---
 
@@ -157,17 +158,17 @@ const {
   queriesToInvalidate: [["ethBalance"]],
   onSuccess: (tx) => console.log("🎉 Tx sent & confirmed:", tx),
   onError: (e) => console.error("🚫 Simulation or send failed:", e),
-});
+})
 
 // simulate & send an ETH transfer:
 await sendTransactionX(
   { to: recipient, value: 1n * 10n ** 18n, account: myAddress, chain: myChain },
   // for contract calls, pass simulation params:
   { abi: MyAbi, functionName: "deposit", args: [1000n], chain: myChain }
-);
+)
 
 // or just raw send (no simulationParams):
-await sendTransactionX({ to, value, account });
+await sendTransactionX({ to, value, account })
 ```
 
 ---
@@ -178,24 +179,24 @@ In all “X” hooks you pass a `WriteExtendedAsyncParams` object:
 
 ```ts
 export type WriteExtendedAsyncParams = {
-  onSuccess?: (txHash: Address) => void;
-  onError?: (e: any) => void;
-  onSettled?: () => void;
-  onSuccessAsync?: (txHash: Address) => Promise<void>;
-  onErrorAsync?: (e: any) => Promise<void>;
-  onSettledAsync?: () => Promise<void>;
+  onSuccess?: (txHash: Address) => void
+  onError?: (e: any) => void
+  onSettled?: () => void
+  onSuccessAsync?: (txHash: Address) => Promise<void>
+  onErrorAsync?: (e: any) => Promise<void>
+  onSettledAsync?: () => Promise<void>
 
   /** simple list of query keys to invalidate after receipt */
-  queriesToInvalidate?: (QueryKey | undefined)[];
+  queriesToInvalidate?: (QueryKey | undefined)[]
 
   /** predicate-based invalidation:
       any active query where `predicate(query)` returns true
       will be invalidated after the tx settles. */
-  invalidatePredicate?: (query: Query<unknown, unknown>) => boolean;
+  invalidatePredicate?: (query: Query<unknown, unknown>) => boolean
 
-  disableLogging?: boolean;
-  disableWaitingForReceipt?: boolean;
-};
+  disableLogging?: boolean
+  disableWaitingForReceipt?: boolean
+}
 ```
 
 ---
@@ -205,17 +206,17 @@ export type WriteExtendedAsyncParams = {
 Fetch summary data from an ERC-4626 vault (total assets, shares, allowances, balances, etc.):
 
 ```ts
-import { useFetchERC4626DataX } from "wagmi-extended";
+import { useFetchERC4626DataX } from "wagmi-extended"
 
 function VaultInfo({ vaultAddress, user, spender }) {
   const { data, isLoading, error } = useFetchERC4626DataX({
     vault,
     user,
     spender,
-  });
+  })
 
-  if (isLoading) return <p>Loading vault data…</p>;
-  if (error) return <p>Error: {error.message}</p>;
+  if (isLoading) return <p>Loading vault data…</p>
+  if (error) return <p>Error: {error.message}</p>
 
   return (
     <div>
@@ -224,7 +225,7 @@ function VaultInfo({ vaultAddress, user, spender }) {
       <p>Your balance: {data.userBalance}</p>
       <p>Your allowance: {data.allowance}</p>
     </div>
-  );
+  )
 }
 ```
 
@@ -235,17 +236,17 @@ function VaultInfo({ vaultAddress, user, spender }) {
 Fetch summary data for a generic ERC-20 token (decimals, name, symbol, balances, allowances):
 
 ```ts
-import { useFetchERC20DataX } from "wagmi-extended";
+import { useFetchERC20DataX } from "wagmi-extended"
 
 function TokenInfo({ token, user, spender }) {
   const { data, isLoading, error } = useFetchERC20DataX({
     address: token,
     user,
     spender,
-  });
+  })
 
-  if (isLoading) return <p>Loading token info…</p>;
-  if (error) return <p>Error: {error.message}</p>;
+  if (isLoading) return <p>Loading token info…</p>
+  if (error) return <p>Error: {error.message}</p>
 
   return (
     <div>
@@ -255,7 +256,7 @@ function TokenInfo({ token, user, spender }) {
       <p>Your balance: {data.balance}</p>
       <p>Your allowance: {data.allowance}</p>
     </div>
-  );
+  )
 }
 ```
 
@@ -391,18 +392,15 @@ It uses an **exponential descent** followed by a **binary search**, making it op
 #### Example
 
 ```ts
-import { fetchDeploymentBlockX } from "wagmi-extended";
+import { fetchDeploymentBlockX } from "wagmi-extended"
 
 async function main() {
-  const deploymentBlock = await fetchDeploymentBlockX(
-    "0xYourContractAddress",
-    0n
-  );
+  const deploymentBlock = await fetchDeploymentBlockX("0xYourContractAddress", 0n)
 
-  console.log("Contract was deployed at block:", deploymentBlock.toString());
+  console.log("Contract was deployed at block:", deploymentBlock.toString())
 }
 
-main();
+main()
 ```
 
 Performance
