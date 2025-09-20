@@ -60,7 +60,7 @@ Compare wagmi-extended with standard wagmi implementations in our interactive Co
 
 ### API
 
-You can import all the functions and hooks directly from `wagmi-extended`. For example:
+You can import all the functions, types and hooks directly from `wagmi-extended`. For example:
 
 ```bash
 import {
