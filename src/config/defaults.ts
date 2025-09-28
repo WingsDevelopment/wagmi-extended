@@ -1,10 +1,8 @@
-// src/config/defaults.ts
-import { QueryClient } from "@tanstack/react-query";
-import { Config } from "wagmi";
+import { QueryClient } from "@tanstack/react-query"
+import { Config } from "wagmi"
 
-// You can adjust the type for wagmiConfig to match your needs.
-let defaultQueryClient: QueryClient | null = null;
-let defaultWagmiConfig: any = null;
+let defaultQueryClient: QueryClient | null = null
+let defaultWagmiConfig: any = null
 
 /**
  * Sets the default configuration values.
@@ -24,12 +22,9 @@ let defaultWagmiConfig: any = null;
  *
  * //Now helper functions like fetchTokenX can use these defaults if no explicit parameters are provided.
  */
-export function setDefaults(
-  queryClient: QueryClient,
-  wagmiConfig: Config
-): void {
-  defaultQueryClient = queryClient;
-  defaultWagmiConfig = wagmiConfig;
+export function setDefaults(queryClient: QueryClient, wagmiConfig: Config): void {
+  defaultQueryClient = queryClient
+  defaultWagmiConfig = wagmiConfig
 }
 
 /**
@@ -48,13 +43,11 @@ export function setDefaults(
  * }
  */
 export function getDefaults(): {
-  queryClient: QueryClient;
-  wagmiConfig: Config;
+  queryClient: QueryClient
+  wagmiConfig: Config
 } {
   if (!defaultQueryClient || !defaultWagmiConfig) {
-    throw new Error(
-      "Default configuration not set. Please call setDefaults() first."
-    );
+    throw new Error("Default configuration not set. Please call setDefaults() first.")
   }
-  return { queryClient: defaultQueryClient, wagmiConfig: defaultWagmiConfig };
+  return { queryClient: defaultQueryClient, wagmiConfig: defaultWagmiConfig }
 }
