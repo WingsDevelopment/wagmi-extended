@@ -84,7 +84,7 @@ The `useContractWriteX` hook wraps Wagmi’s `useWriteContract` with extra featu
 
 - **Receipt waiting**: always waits for the transaction receipt before resolving.
 - **Logging control**: disable console logging if you wish.
-- **Query invalidation**: automatically invalidates queries after receipt, either by explicit keys or by predicate.
+- **Query invalidation**: automatically invalidates queries after receipt, either by explicit keys or by predicate. Invalidation by predicate is first executed.
 
 #### Original `writeContractAsync`
 
