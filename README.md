@@ -108,6 +108,7 @@ await writeContractAsync({
 
 #### New `writeContractX` method
 
+Use `writeContract` if you don't want simulation to happen
 Use `writeContractX` if you need control over the simulation step:
 
 ```ts
@@ -117,20 +118,17 @@ const { writeContractX, isPending, errorMessage } = useContractWriteX({
 })
 
 // simulate + send:
-await writeContractX(
-  {
-    address: "0xContractAddress",
-    abi: MyContractAbi,
-    functionName: "executeFunction",
-    args: [
-      /* ... */
-    ],
-    account: myAddress,
-    chain: myChain,
-    value: 0n,
-  },
-  /* disableSimulation? */ false
-)
+await writeContractX({
+  address: "0xContractAddress",
+  abi: MyContractAbi,
+  functionName: "executeFunction",
+  args: [
+    /* ... */
+  ],
+  account: myAddress,
+  chain: myChain,
+  value: 0n,
+})
 
 // send immediately without simulation:
 await writeContractX(params, /* disableSimulation= */ true)
