@@ -70,7 +70,8 @@ import {
   useWriteTransactionX,
   setDefaults,
   getDefaults,
-  WriteExtendedAsyncParams
+  WriteExtendedAsyncParams,
+  queryConfig
 } from "wagmi-extended";
 ```
 
