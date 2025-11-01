@@ -132,7 +132,7 @@ await writeContractX({
 })
 
 // send immediately without simulation:
-await writeContractX(params, /* disableSimulation= */ true)
+await writeContractX(params /* do not do simulation, by not passing simulation data */)
 ```
 
 - **`writeContractAsync`** = always runs the built-in dry-run, then write.
