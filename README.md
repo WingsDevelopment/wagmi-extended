@@ -372,7 +372,7 @@ const tokensData = await Promise.all(tokenAddresses.map((token) =>
 ### fetchDeploymentBlockX
 
 The `fetchDeploymentBlockX` function finds and caches the earliest block where a contract was deployed  
-(i.e., the first block containing bytecode at a given address).
+(i.e., the first block containing bytecode at a given address). The cache is STORED in locally storage by default and will never refetch this from the chain unless local storage is cleared up.
 
 It uses an **exponential descent** followed by a **binary search**, making it optimal for locating deployment blocks with minimal RPC calls.
 
