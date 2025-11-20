@@ -168,7 +168,7 @@ await sendTransactionX(
 )
 
 // or just raw send (no simulationParams):
-await sendTransactionX({ to, value, account })
+await sendTransaction({ to, value, account })
 ```
 
 ---
