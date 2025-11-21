@@ -1,4 +1,4 @@
-import { InvalidParamsRpcError, type Address, type Hex } from "viem"
+import type { Address, Hex } from "viem"
 import type { QueryClient } from "@tanstack/react-query"
 import type { Config } from "wagmi"
 import { getPublicClient } from "wagmi/actions"
@@ -51,30 +51,12 @@ function writeDeploymentBlockToLS(chainId: bigint, address: Address, floor: bigi
 async function hasCodeAtX(
   address: Address,
   blockNumber: bigint,
-  wagmiConfig: Config,
-  allowFail = true
+  wagmiConfig: Config
 ): Promise<boolean> {
   const client = getPublicClient(wagmiConfig)
   if (!client) throw new Error("Public client is missing")
-
-  try {
-    const code = await client.getCode({ address, blockNumber })
-    return !!code && code !== "0x"
-  } catch (err: any) {
-    const isPruned =
-      err instanceof InvalidParamsRpcError &&
-      typeof err.details === "string" &&
-      err.details.toLowerCase().includes("block requested not found")
-
-    if (allowFail && isPruned) {
-      console.warn(
-        `[deploymentBlock] RPC pruned state for block ${blockNumber} — allowFail = true → treating as no-code`
-      )
-      return false
-    }
-
-    throw err
-  }
+  const code: Hex | undefined = await client.getCode({ address, blockNumber })
+  return !!code && code !== "0x"
 }
 
 /**
@@ -91,20 +73,19 @@ async function hasCodeAtX(
 async function findDeploymentBlockRpcX(
   address: Address,
   wagmiConfig: Config,
-  floor: bigint = 0n,
-  allowFail = true
+  floor: bigint = 0n
 ): Promise<bigint> {
   const client = getPublicClient(wagmiConfig)
   if (!client) throw new Error("Public client is missing")
 
   const latest = await client.getBlockNumber()
-  if (!(await hasCodeAtX(address, latest, wagmiConfig, allowFail))) {
+  if (!(await hasCodeAtX(address, latest, wagmiConfig))) {
     const chainId = client.chain?.id ?? 0
     throw new Error(`No code for ${address} at latest block ${latest} on chain ${chainId}.`)
   }
 
   // If caller-supplied floor already has code, it *is* the first code block.
-  if (floor > 0n && (await hasCodeAtX(address, floor, wagmiConfig, allowFail))) return floor
+  if (floor > 0n && (await hasCodeAtX(address, floor, wagmiConfig))) return floor
 
   // Exponential descent to find a "no code" lower bound fast.
   let lo = floor // known (or assumed) no code
@@ -113,7 +94,7 @@ async function findDeploymentBlockRpcX(
 
   while (hi - step > lo) {
     const probe = hi - step
-    if (await hasCodeAtX(address, probe, wagmiConfig, allowFail)) {
+    if (await hasCodeAtX(address, probe, wagmiConfig)) {
       hi = probe // still has code -> move upper bound down
       step <<= 1n // double the step
     } else {
@@ -125,7 +106,7 @@ async function findDeploymentBlockRpcX(
   // Binary search to the first block with code in (lo, hi]
   while (lo + 1n < hi) {
     const mid = lo + (hi - lo) / 2n
-    if (await hasCodeAtX(address, mid, wagmiConfig, allowFail)) hi = mid
+    if (await hasCodeAtX(address, mid, wagmiConfig)) hi = mid
     else lo = mid
   }
   return hi
@@ -152,7 +133,7 @@ export function getDeploymentBlockQueryOptionsX(
   address: Address,
   floor: bigint = 0n,
   wagmiConfig?: Config,
-  options?: { disableLocalStorage?: boolean; chainId?: bigint; allowFail?: boolean }
+  options?: { disableLocalStorage?: boolean; chainId?: bigint }
 ) {
   if (!address) throw new Error("Address is required")
   const disableLocalStorage = options?.disableLocalStorage ?? false
@@ -179,12 +160,7 @@ export function getDeploymentBlockQueryOptionsX(
       }
 
       // Otherwise do the discovery via RPC
-      const discovered = await findDeploymentBlockRpcX(
-        address,
-        wagmiConfig,
-        floor,
-        options?.allowFail
-      )
+      const discovered = await findDeploymentBlockRpcX(address, wagmiConfig, floor)
 
       // Persist to localStorage for subsequent sessions
       if (!disableLocalStorage) {
@@ -243,6 +219,7 @@ export async function fetchDeploymentBlockX(
   wagmiConfig?: Config
 ): Promise<bigint> {
   if (!address) throw new Error("Address is required")
+
   ;({ queryClient, wagmiConfig } = ensureClientAndConfig(queryClient, wagmiConfig))
 
   const client = getPublicClient(wagmiConfig)
@@ -262,7 +239,9 @@ export async function fetchDeploymentBlockX(
   }
 
   return queryClient.fetchQuery({
-    ...getDeploymentBlockQueryOptionsX(address, floor, wagmiConfig, options),
+    ...getDeploymentBlockQueryOptionsX(address, floor, wagmiConfig, {
+      disableLocalStorage,
+    }),
     // Ensure the final key includes a concrete chainId
     queryKey: key,
     // Reinstate metadata (in case your ensure/util merges)
