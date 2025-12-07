@@ -1,29 +1,31 @@
-import { waitForTransactionReceipt } from "wagmi/actions";
-import { useConfig } from "wagmi";
-import { Query, QueryKey } from "@tanstack/query-core";
-import { Address } from "viem";
-import { useState } from "react";
-import { useInvalidateQueries } from "./useInvalidateQueries.js";
-import { useQueryClient } from "@tanstack/react-query";
-import { getParsedErrorX } from "../../utils/errorParserX.js";
+import { waitForTransactionReceipt } from "wagmi/actions"
+import { useConfig } from "wagmi"
+import { Query, QueryKey } from "@tanstack/query-core"
+import { Address, WaitForTransactionReceiptParameters } from "viem"
+import { useState } from "react"
+import { useInvalidateQueries } from "./useInvalidateQueries.js"
+import { useQueryClient } from "@tanstack/react-query"
+import { getParsedErrorX } from "../../utils/errorParserX.js"
 
 export type WriteExtendedAsyncParams = {
-  onSuccess?: (txHash: Address) => void;
-  onError?: (e: any) => void;
-  onSettled?: () => void;
+  onSuccess?: (txHash: Address) => void
+  onError?: (e: any) => void
+  onSettled?: () => void
 
-  onSuccessAsync?: (txHash: Address) => Promise<void>;
-  onErrorAsync?: (e: any) => Promise<void>;
-  onSettledAsync?: () => Promise<void>;
+  onSuccessAsync?: (txHash: Address) => Promise<void>
+  onErrorAsync?: (e: any) => Promise<void>
+  onSettledAsync?: () => Promise<void>
 
   /** simple list of keys to invalidate */
-  queriesToInvalidate?: (QueryKey | undefined)[];
+  queriesToInvalidate?: (QueryKey | undefined)[]
   /** a predicate to decide which queries to invalidate */
-  invalidatePredicate?: (query: Query<unknown, unknown>) => boolean;
+  invalidatePredicate?: (query: Query<unknown, unknown>) => boolean
 
-  disableLogging?: boolean;
-  disableWaitingForReceipt?: boolean;
-};
+  disableLogging?: boolean
+  disableWaitingForReceipt?: boolean
+
+  waitForTransactionReceiptParameters?: Omit<WaitForTransactionReceiptParameters, "hash">
+}
 
 /**
  * Custom hook to handle transaction mutations.
@@ -33,70 +35,63 @@ export type WriteExtendedAsyncParams = {
 export function useHandleTransactionMutationX({
   settings,
 }: {
-  settings?: WriteExtendedAsyncParams;
+  settings?: WriteExtendedAsyncParams
 }) {
-  const wagmiConfig = useConfig();
-  const queryClient = useQueryClient();
+  const wagmiConfig = useConfig()
+  const queryClient = useQueryClient()
 
-  const { invalidateMany } = useInvalidateQueries();
-  const [isPending, setIsPending] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | undefined>(
-    undefined
-  );
+  const { invalidateMany } = useInvalidateQueries()
+  const [isPending, setIsPending] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined)
 
   const onMutate = () => {
-    setIsPending(true);
-    setErrorMessage(undefined);
-  };
+    setIsPending(true)
+    setErrorMessage(undefined)
+  }
 
-  const onSettled = async (
-    txHash: Address | undefined,
-    error: any,
-    args: any
-  ) => {
+  const onSettled = async (txHash: Address | undefined, error: any, args: any) => {
     try {
-      if (error) throw error;
+      if (error) throw error
 
       if (!settings?.disableWaitingForReceipt) {
         // 1. wait for transaction receipt
         const txReceipt = await waitForTransactionReceipt(wagmiConfig, {
           hash: txHash!,
-        });
+          ...settings?.waitForTransactionReceiptParameters,
+        })
 
         // 2. throw if receipt is not valid
-        if (txReceipt.status === "reverted")
-          throw new Error("Execution reverted.");
-        if (txReceipt.status !== "success")
-          throw new Error("Execution reverted.");
+        if (txReceipt.status === "reverted") throw new Error("Execution reverted.")
+        if (txReceipt.status !== "success") throw new Error("Execution reverted.")
       }
 
       // 3. invalidate queries
-      const { queriesToInvalidate, invalidatePredicate } = settings || {};
+      const { queriesToInvalidate, invalidatePredicate } = settings || {}
 
       if (invalidatePredicate) {
         // 1) predicate-based
         await queryClient.invalidateQueries({
           predicate: invalidatePredicate,
-        });
+        })
       }
       if (queriesToInvalidate) {
         // 2) explicit key list
-        await invalidateMany(queriesToInvalidate);
+        await invalidateMany(queriesToInvalidate)
       }
 
       // 4. call onSuccess callback
-      settings?.onSuccess?.(txHash!);
-      if (settings?.onSuccessAsync) await settings.onSuccessAsync(txHash!);
+      settings?.onSuccess?.(txHash!)
+      if (settings?.onSuccessAsync) await settings.onSuccessAsync(txHash!)
 
       if (!settings?.disableLogging) {
         // 5. log result
         // eslint-disable-next-line no-console
-        console.info("Operation successful:", txHash); // todo: add logging service
+        console.info("Operation successful:", txHash) // todo: add logging service
       }
       // 6. return result
-      return txHash;
+      return txHash
     } catch (error) {
-      const parsedError = getParsedErrorX(error);
+      const parsedError = getParsedErrorX(error)
 
       if (!settings?.disableLogging) {
         // 1. log error
@@ -104,28 +99,28 @@ export function useHandleTransactionMutationX({
           `ContractWriteExtended Operation failed with error(parsed): ${parsedError}`,
           { error },
           { args }
-        );
-        console.error({ error });
+        )
+        console.error({ error })
       }
       // 2. set error message
-      setErrorMessage(parsedError);
+      setErrorMessage(parsedError)
 
       // 3. call callback
-      settings?.onError?.(error);
-      if (settings?.onErrorAsync) await settings.onErrorAsync(error);
+      settings?.onError?.(error)
+      if (settings?.onErrorAsync) await settings.onErrorAsync(error)
     } finally {
-      setIsPending(false);
+      setIsPending(false)
       // 1. call callback
-      settings?.onSettled?.();
-      if (settings?.onSettledAsync) await settings.onSettledAsync();
+      settings?.onSettled?.()
+      if (settings?.onSettledAsync) await settings.onSettledAsync()
     }
-    return undefined;
-  };
+    return undefined
+  }
 
   return {
     onMutate,
     onSettled,
     isPending,
     errorMessage,
-  };
+  }
 }
