@@ -376,7 +376,7 @@ The `fetchDeploymentBlockX` function finds and caches the earliest block where a
 
 It uses an **exponential descent** followed by a **binary search**, making it optimal for locating deployment blocks with minimal RPC calls.
 
-Might not work on Monad network or any network where getCode doesn't work.
+Might not work on Monad network or any network where getCode doesn't work. (This is how Monad is designed)
 
 - **Exponential descent**: quickly finds a safe lower bound with no code.
 - **Binary search**: efficiently pinpoints the exact deployment block in logarithmic steps.
