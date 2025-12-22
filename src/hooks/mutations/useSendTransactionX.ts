@@ -11,7 +11,7 @@ import { writeContract } from "wagmi/actions";
  * @param {WriteExtendedAsyncParams} [settings] - Settings for handling transaction lifecycle:
  * @param {boolean} [settings.disableWaitingForReceipt] - Disable waiting for receipt.
  * @param {boolean} [settings.disableLogging] - Disable logging.
- * @param {Function} [settings.onSuccess] - Callback on success.
+ * @param {Function} [settings.onSuccess] - Callback on success (txHash, txReceipt).
  * @param {Function} [settings.onError] - Callback on error.
  * @param {Function} [settings.onSettled] - Callback after settlement.
  * @param {Array<import('@tanstack/query-core').QueryKey>} [settings.queriesToInvalidate] - Query keys to invalidate after receipt.

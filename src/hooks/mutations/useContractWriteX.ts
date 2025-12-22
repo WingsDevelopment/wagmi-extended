@@ -11,7 +11,7 @@ import { Address } from "viem";
  * @param {WriteExtendedAsyncParams} settings - Settings for handling transaction lifecycle:
  * @param {boolean} [settings.disableWaitingForReceipt] - Disable waiting for receipt.
  * @param {boolean} [settings.disableLogging] - Disable logging.
- * @param {Function} [settings.onSuccess] - Callback invoked on successful transaction receipt.
+ * @param {Function} [settings.onSuccess] - Callback invoked on successful transaction receipt (txHash, txReceipt).
  * @param {Function} [settings.onError] - Callback invoked on simulation or transaction error.
  * @param {Function} [settings.onSettled] - Callback invoked after transaction settles.
  * @param {Array<import('@tanstack/query-core').QueryKey>} [settings.queriesToInvalidate] - Query keys to invalidate after receipt.

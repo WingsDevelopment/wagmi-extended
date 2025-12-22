@@ -1,18 +1,18 @@
 import { waitForTransactionReceipt } from "wagmi/actions"
 import { useConfig } from "wagmi"
 import { Query, QueryKey } from "@tanstack/query-core"
-import { Address, WaitForTransactionReceiptParameters } from "viem"
+import { Address, TransactionReceipt, WaitForTransactionReceiptParameters } from "viem"
 import { useState } from "react"
 import { useInvalidateQueries } from "./useInvalidateQueries.js"
 import { useQueryClient } from "@tanstack/react-query"
 import { getParsedErrorX } from "../../utils/errorParserX.js"
 
 export type WriteExtendedAsyncParams = {
-  onSuccess?: (txHash: Address) => void
+  onSuccess?: (txHash: Address, txReceipt?: TransactionReceipt) => void
   onError?: (e: any) => void
   onSettled?: () => void
 
-  onSuccessAsync?: (txHash: Address) => Promise<void>
+  onSuccessAsync?: (txHash: Address, txReceipt?: TransactionReceipt) => Promise<void>
   onErrorAsync?: (e: any) => Promise<void>
   onSettledAsync?: () => Promise<void>
 
@@ -53,9 +53,11 @@ export function useHandleTransactionMutationX({
     try {
       if (error) throw error
 
+      let txReceipt: TransactionReceipt | undefined
+
       if (!settings?.disableWaitingForReceipt) {
         // 1. wait for transaction receipt
-        const txReceipt = await waitForTransactionReceipt(wagmiConfig, {
+        txReceipt = await waitForTransactionReceipt(wagmiConfig, {
           hash: txHash!,
           ...settings?.waitForTransactionReceiptParameters,
         })
@@ -80,8 +82,8 @@ export function useHandleTransactionMutationX({
       }
 
       // 4. call onSuccess callback
-      settings?.onSuccess?.(txHash!)
-      if (settings?.onSuccessAsync) await settings.onSuccessAsync(txHash!)
+      settings?.onSuccess?.(txHash!, txReceipt)
+      if (settings?.onSuccessAsync) await settings.onSuccessAsync(txHash!, txReceipt)
 
       if (!settings?.disableLogging) {
         // 5. log result
